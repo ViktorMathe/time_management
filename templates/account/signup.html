@@ -1,0 +1,8 @@
+{% extends "account/base.html" %}
+{% load i18n %}
+{% block head_title %}{% trans "Signup" %}{% endblock %}
+<h1>{% trans "Sign Up" %}</h1>
+{% blocktrans %}
+{% endblocktrans %}
+{% trans "Sign Up" %}
+{{ form.as_p }}
