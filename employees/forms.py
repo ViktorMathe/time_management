@@ -1,10 +1,15 @@
 from allauth.account.forms import SignupForm
+from django import forms
 
 
 class EmployeeSignupForm(SignupForm):
 
-    def save(self,request):
+    first_name = forms.CharField(max_length=30, label='First Name')
+    last_name = forms.CharField(max_length=30, label='Last Name')
+ 
+    def save(self, request):
         user = super(EmployeeSignupForm, self).save(request)
-
-        first_name = forms.CharField(required=True)
-        last_name = forms.CharField(required=True)
+        user.first_name = self.cleaned_data['first_name']
+        user.last_name = self.cleaned_data['last_name']
+        user.save()
+        return user
