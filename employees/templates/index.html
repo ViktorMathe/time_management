@@ -10,6 +10,7 @@
 			<li><a href="#tabs-3">Manager Login</a></li>
 		</ul>
 		<div id="tabs-1">
+			{% csrf_token %}
 			<div>{{ error_message }}</div>
 			<form action="" method="post">{% csrf_token %}
 			  <fieldset>
@@ -26,11 +27,17 @@
 					</tr>
 					<tr>
 						<td></td>
-						<td><input type="submit" name="clock_action" value="ClockIn"><input type="submit" name="clock_action" value="ClockOut"></td>
+						<td>{% csrf_token %}<input type="submit" name="clock_action" value="ClockIn"><input type="submit" name="clock_action" value="ClockOut"></td>
 					</tr>
 				</table>
 			  </fieldset>
 			</form>
+			<form method="post">
+				{% csrf_token %}
+				{{ form.as_p }}
+				<button type="submit">Clock In/Out</button>
+			</form>
+			
 		</div>
 		<div id="tabs-2">	
 			<form action="" method="post">{% csrf_token %}

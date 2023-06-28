@@ -1,0 +1,14 @@
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Clock In/Out</button>
+</form>
+
+
+<script>
+$(document).ready(function() {
+  $('form').submit(function() {
+    $('input[type="submit"]').attr('disabled', true);
+  });
+});
+</script>

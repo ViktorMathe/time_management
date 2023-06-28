@@ -5,23 +5,25 @@ from django.template import Context
 from django.contrib.auth.models import User
 from django.template.context_processors import csrf
 from django.contrib.auth.decorators import login_required
-from .models import Timesheet
-from .models import AnnualLeave 
-from .models import SickLeave  
-import datetime
+from .models import Timesheet, AnnualLeave, SickLeave, EmployeeProfile
+from .forms import ClockingForm
+
+from datetime import datetime
 from django.utils.timezone import utc
 
-def clock_action(request, User): # Define function, accept a request and user details
-    """Receives the users input e.g. clock in / out actions, stores and retrieves records to and from the database"""
+"""
+def clock_action(request): # Define function, accept a request and user details
+
+
+    Receives the users input e.g. clock in / out actions, stores and retrieves records to and from the database
     # When the employee clocks in/out the post is received, the date and time is recorded and it is logged to the employees user_id
-    user = get_object_or_404(User, pk=User.id)
     clock_action = request.POST.get('clock_action','')  
     now = datetime.datetime.utcnow().replace(tzinfo=utc)
     logged_status = Timesheet.objects.filter(employee=user).latest()
     # when the employee logs in they can not log in again until they logout first 
     if clock_action == "ClockIn":
         if logged_status.logging == "OUT":
-            timesheet = Timesheet(employee=User, recorded_by=user, clocking_time=now, logging="IN", ip_address=request.META.get('REMOTE_ADDR','NA'))
+            timesheet = Timesheet(employee=user, recorded_by=user, clocking_time=now, logging="IN", ip_address=request.META.get('REMOTE_ADDR','NA'))
             timesheet.save()
             return HttpResponseRedirect('/timesheet_success/in/?time=%s' % now)
         else:
@@ -49,8 +51,72 @@ def clock_action(request, User): # Define function, accept a request and user de
         'error_message':error_message
     }
     return render(request, "index.html", context)
+ 
+ 
 
+def clock_action(request):
+    if request.method == 'POST':
+        # Retrieve the logged-in user
+        if request.user.is_authenticated:
+           employee = request.user
+
+        # Get the current datetime
+           now = datetime.now()
+
+        # Check if the employee has a corresponding timesheet entry for the current date
+           timesheet_entry = Timesheet.objects.filter(employee=employee, recorded_datetime__date=now.date()).first()
+
+        # Create a new timesheet entry if it doesn't exist
+           if not timesheet_entry:
+               timesheet_entry = Timesheet(employee=employee, recorded_datetime=now)
+
+        # Set the appropriate time field based on the clock action
+           if 'clock_in' in request.POST:
+               timesheet_entry.clock_in = now.time()
+               timesheet_entry.save()
+               return HttpResponseRedirect(f'/timesheet_success/in/?time={now.strftime("%Y-%m-%d %H:%M:%S")}')
+           elif 'clock_out' in request.POST:
+               timesheet_entry.clock_out = now.time()
+               timesheet_entry.save()
+               return HttpResponseRedirect(f'/timesheet_success/out/?time={now.strftime("%Y-%m-%d %H:%M:%S")}')
+        else:
+            return render(request, "accounts/login.html")
     
+    return render(request, 'index.html')
+    """
+
+
+def clock_action(request):
+    if request.method == 'POST':
+        form = ClockingForm(request.POST)
+        if form.is_valid():
+            logging_choice = form.cleaned_data['logging']
+            timesheet_entry = Timesheet(logging=logging_choice)
+            timesheet_entry.save()
+            print("Timesheet entry saved:", timesheet_entry)
+            return redirect('success')  # Replace 'success' with the URL name of your success page
+        else:
+            print("Form is not valid:", form.errors)
+    else:
+        form = ClockingForm()
+    return render(request, 'clock.html', {'form': form})
+
+@login_required
+def clocking_view(request):
+    if request.method == 'POST':
+        form = ClockingForm(request.POST)
+        if form.is_valid():
+            timesheet = form.save(commit=False)
+            timesheet.employee = request.user
+            timesheet.recorded_by = request.user
+            timesheet.clocking_time = datetime.now()
+            timesheet.save()
+            return redirect('success_page')
+    else:
+        form = ClockingForm()
+    return render(request, 'clock.html', {'form': form})
+
+
 def holiday_request(request, user):
     """ Takes the date and time that the employee requested from / to """ 
     holiday_request = request.POST.get('holiday_request','')
@@ -82,7 +148,7 @@ def index(request):
             if User is not None:
                 # if its a clock in/out action or holiday request action its processed 
                 if 'clock_action' in request.POST:
-                    return clock_action(request,User)
+                    return clock_action(request)
                 elif 'holiday_request' in request.POST:
                     return holiday_request(request,User)                   
             else:

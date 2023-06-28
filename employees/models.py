@@ -15,7 +15,7 @@ class JobRole(models.Model):
 class EmployeeProfile(models.Model):
     """ Employee model """
     GENDER_CHOICES = (('M', _('Male')), ('F', _('Female')))
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
     phone_number = models.IntegerField(blank=True, null=True)
     birth_date = models.DateField(blank=True, null=True)
     gender = models.CharField(max_length=1, choices=GENDER_CHOICES,blank=True, null=True)
@@ -42,10 +42,10 @@ class Timesheet(models.Model):
     employee = models.ForeignKey(User, on_delete=models.CASCADE, related_name="%(app_label)s_%(class)s_employee")
     recorded_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name="%(app_label)s_%(class)s_recorded_by")   
     recorded_datetime = models.DateTimeField(auto_now_add=True)
-    clocking_time = models.DateTimeField()
+    clocking_time = models.DateTimeField(null=True)
     # whether the user has clocked in or out
     logging = models.CharField(max_length=3, choices=LOGGING_CHOICES)
-    ip_address = models.GenericIPAddressField()
+    ip_address = models.GenericIPAddressField(null=True)
     comments = models.TextField(blank=True, null=True)
 
     class Meta:
@@ -53,6 +53,9 @@ class Timesheet(models.Model):
 
     def __unicode__(self):
         return "%s checked %s at %s" % (self.employee, self.logging, self.clocking_time)
+
+    def __str__(self):
+        return f"Timesheet Entry: {self.employee.first_name} {self.employee.last_name} logged {self.logging} at {self.clocking_time.strftime('%H:%M:%S')}"
 
 
 class AnnualLeave(models.Model):
@@ -71,7 +74,7 @@ class AnnualLeave(models.Model):
 class SickLeave(models.Model):
     """ Sick timesheet model """
     employee  = models.ForeignKey(User, on_delete=models.CASCADE, related_name="%(app_label)s_%(class)s_employee")
-    recorded_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name="%(app_label)s_%(class)s_recorded_by")   
+    recorded_by = models.ForeignKey(User, on_delete=models.CASCADE, null=True, related_name="%(app_label)s_%(class)s_recorded_by")   
     recorded_datetime = models.DateTimeField(auto_now_add=True)
     date_from = models.DateTimeField()
     date_to = models.DateTimeField()

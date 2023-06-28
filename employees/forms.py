@@ -1,5 +1,6 @@
 from allauth.account.forms import SignupForm
 from django import forms
+from .models import Timesheet
 
 
 class EmployeeSignupForm(SignupForm):
@@ -13,3 +14,9 @@ class EmployeeSignupForm(SignupForm):
         user.last_name = self.cleaned_data['last_name']
         user.save()
         return user
+
+
+class ClockingForm(forms.ModelForm):
+    class Meta:
+        model = Timesheet
+        fields = ['logging']

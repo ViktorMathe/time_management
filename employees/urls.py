@@ -9,4 +9,5 @@ urlpatterns = [
 	path('mgnt_clocking/', views.mgnt_clocking),
 	path('holiday_request/', views.holiday_request_action),
 	path('loggedin/', views.loggedin),
+	path('clocking/', views.clocking_view, name='clocking'),
 ]
