@@ -12,32 +12,40 @@
 		<div id="tabs-1">
 			{% csrf_token %}
 			<div>{{ error_message }}</div>
-			<form action="" method="post">{% csrf_token %}
-			  <fieldset>
-				<legend>Clock In/Out</legend>
-				<div></div>
-				<table>
-					<tr>
-						<td>Employee ID:</td>
-						<td> <input type="text" name="employee_id"></td>
-					</tr>
-					<tr>
-						<td>Password:</td>
-						<td><input type="password" name="password"></td>
-					</tr>
-					<tr>
-						<td></td>
-						<td>{% csrf_token %}<input type="submit" name="clock_action" value="ClockIn"><input type="submit" name="clock_action" value="ClockOut"></td>
-					</tr>
-				</table>
-			  </fieldset>
-			</form>
-			<form method="post">
+			<form action="" method="post">
 				{% csrf_token %}
-				{{ form.as_p }}
-				<button type="submit">Clock In/Out</button>
-			</form>
-			
+				<fieldset>
+				  <legend>Clock In/Out</legend>
+				  <div></div>
+				  <table>
+					<tr>
+					  <td>Employee ID:</td>
+					  <td><input type="text" name="employee_id"></td>
+					</tr>
+					<tr>
+					  <td>Password:</td>
+					  <td><input type="password" name="password"></td>
+					</tr>
+					<tr>
+					  <td>Logging:</td>
+					  <td>
+						<select name="logging">
+						  <option value="IN">Clock In</option>
+						  <option value="OUT">Clock Out</option>
+						</select>
+					  </td>
+					</tr>
+					<tr>
+					  <td></td>
+					  <td>
+						{% csrf_token %}
+						<input type="submit" name="clock_action" value="Submit">
+					  </td>
+					</tr>
+				  </table>
+				</fieldset>
+			  </form>
+			  
 		</div>
 		<div id="tabs-2">	
 			<form action="" method="post">{% csrf_token %}

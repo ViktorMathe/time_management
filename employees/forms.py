@@ -17,6 +17,8 @@ class EmployeeSignupForm(SignupForm):
 
 
 class ClockingForm(forms.ModelForm):
+    logging = forms.CharField(required=True)
+
     class Meta:
         model = Timesheet
         fields = ['logging']

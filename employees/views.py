@@ -1,14 +1,15 @@
 from django.http import HttpResponse, HttpResponseRedirect
 from django.template.loader import get_template
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, get_object_or_404, redirect
 from django.template import Context
 from django.contrib.auth.models import User
+from django.contrib.auth import authenticate
 from django.template.context_processors import csrf
 from django.contrib.auth.decorators import login_required
 from .models import Timesheet, AnnualLeave, SickLeave, EmployeeProfile
 from .forms import ClockingForm
 
-from datetime import datetime
+from datetime import datetime, date
 from django.utils.timezone import utc
 
 """
@@ -138,6 +139,107 @@ def holiday_request(request, user):
         context = {'error_message':error_message}
         return render(request, "index.html", context)
 
+"""
+def clock_action(request):
+    # Authenticate the user
+    user = authenticate(request, username=request.user.username, password=request.POST.get('password'))
+    
+    if user is not None:
+        print(user)
+        form = ClockingForm(request.POST)
+        if form.is_valid():
+            timesheet = form.save(commit=False)
+            print(timesheet)
+            timesheet.employee = request.user
+            print(timesheet.employee)
+            timesheet.recorded_by = request.user
+            timesheet.clocking_time = datetime.now()
+
+            # Check if it's a clock in or clock out action
+            clock_action = request.POST.get('clock_action', '')
+            print(clock_action)
+            
+            if clock_action == "ClockIn":
+                # Perform clock in action
+                timesheet.logging = "IN"
+                timesheet.save()
+                return HttpResponseRedirect('/timesheet_success/in/?time=%s' % timesheet.clocking_time)
+            elif clock_action == "ClockOut":
+                # Perform clock out action
+                timesheet.logging = "OUT"
+                timesheet.save()
+                return HttpResponseRedirect('/timesheet_success/out/?time=%s' % timesheet.clocking_time)
+            else:
+                error_message = "Invalid clock action.\n"
+                print(1)
+        else:
+            error_message = "Invalid form data.\n"
+            print(form.errors)
+            print(2)
+    else:
+        error_message = "Invalid username or password.\n"
+        print(3)
+        
+    context = {'error_message': error_message, 'form': form}
+    return render(request, "index.html", context)
+
+    """
+
+def clock_action(request):
+    form = ClockingForm()  # Define default form
+    error_message = None
+    
+    if request.method == 'POST':
+        # Retrieve form data
+        employee_id = request.POST.get('employee_id')
+        password = request.POST.get('password')
+        logging = request.POST.get('logging')
+        
+        # Authenticate the user
+        user = authenticate(request, username=request.user.username, password=password)
+        
+        if user is not None:
+            form = ClockingForm(request.POST)
+            
+            if form.is_valid():
+                timesheet = form.save(commit=False)
+                timesheet.employee = user
+                timesheet.recorded_by = user
+                timesheet.clocking_time = datetime.now()
+
+                if logging == "IN":
+                    # Check if the user has already clocked in
+                    today = date.today()
+                    existing_timesheet = Timesheet.objects.filter(employee=user, logging="IN", clocking_time__date=today).first()
+                    if existing_timesheet:
+                        error_message = "You have already clocked in today."
+                    else:
+                        # Perform clock in action
+                        timesheet.logging = "IN"
+                        timesheet.save()
+                        return HttpResponseRedirect('/timesheet_success/in/?time=%s' % timesheet.clocking_time)
+                elif logging == "OUT":
+                    # Check if the user has already clocked out
+                    today = date.today()
+                    existing_timesheet = Timesheet.objects.filter(employee=user, logging="OUT", clocking_time__date=today).first()
+                    if existing_timesheet:
+                        error_message = "You have already clocked out today."
+                    else:
+                        # Perform clock out action
+                        timesheet.logging = "OUT"
+                        timesheet.save()
+                        return HttpResponseRedirect('/timesheet_success/out/?time=%s' % timesheet.clocking_time)
+                else:
+                    error_message = "Invalid logging value.\n"
+            else:
+                error_message = "Invalid form data.\n"
+        else:
+            error_message = "Invalid username or password.\n"
+    
+    context = {'error_message': error_message, 'form': form}
+    return render(request, "index.html", context)
+
+
 def index(request):
     error_message = ""
     if request.method == "POST":
@@ -198,37 +300,7 @@ def holiday_request_action(request, action, holiday_request_id): # Define functi
         # display error massage
         error_message = "Incorrect Holiday Request Action.\n"
         return render("loggedin.html", {'error_message':error_message}, context_instance=RequestContext(request))
-    
 
-@login_required
-def sick_leave(request):
-    """ Managemnent login is required. Enables the manager to enter an employees sick leave """
-    if request.method == "POST":
-        sick_leave = request.POST.get('sick_leave','')
-        username = request.POST.get('employee_id', '')
-        try:
-            # try to get the employees records
-            employee = User.objects.get(username=username)
-            # manager enters employees sick leave
-            if sick_leave == "EnterSickLeave":
-                sick_leave_info = SickLeave(employee=employee, recorded_by=request.user)
-                date_from = request.POST.get('date_from')
-                time_from = request.POST.get('time_from')
-                date_to = request.POST.get('date_to')
-                time_to = request.POST.get('time_to')
-                sick_leave_info.date_from = "%s %s" % (date_from, time_from)
-                sick_leave_info.date_to = "%s %s" % (date_to, time_to)
-                sick_leave_info.save()
-                return HttpResponseRedirect('/loggedin/')
-            else:
-                # if incorrect details, error massage is displayed
-                error_message = "Incorrect Sick Leave Action.\n"
-                return render("loggedin.html", {'error_message':error_message}, context_instance=RequestContext(request))
-        except Exception as e:
-            # if users records can not be accessed, error massage is displayed
-            return render("loggedin.html", {'error_message':"%s"%e}, context_instance=RequestContext(request))
-    else:        
-        return HttpResponseRedirect('/loggedin/')
 
 @login_required
 def mgnt_clocking(request): #Define function, accept a request 

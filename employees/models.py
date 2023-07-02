@@ -47,6 +47,7 @@ class Timesheet(models.Model):
     logging = models.CharField(max_length=3, choices=LOGGING_CHOICES)
     ip_address = models.GenericIPAddressField(null=True)
     comments = models.TextField(blank=True, null=True)
+    worked_hours = models.CharField(max_length=54, null=True)
 
     class Meta:
         get_latest_by = 'clocking_time'
@@ -54,8 +55,42 @@ class Timesheet(models.Model):
     def __unicode__(self):
         return "%s checked %s at %s" % (self.employee, self.logging, self.clocking_time)
 
-    def __str__(self):
-        return f"Timesheet Entry: {self.employee.first_name} {self.employee.last_name} logged {self.logging} at {self.clocking_time.strftime('%H:%M:%S')}"
+    def worked_hours(self):
+        if self.logging == 'OUT' and self.clocking_time and self.recorded_by_id:
+            previous_in_timesheet = Timesheet.objects.filter(
+                employee_id=self.employee_id,
+                recorded_datetime__date=self.recorded_datetime.date(),
+                logging='IN'
+            ).exclude(id=self.id).order_by('recorded_datetime').last()
+
+            if previous_in_timesheet:
+                working_time = self.clocking_time - previous_in_timesheet.clocking_time
+            else:
+                working_time = timedelta()
+
+                return str(working_time)
+        else:
+            return "Clock-out not recorded yet."
+
+    def get_worked_hours(self):
+        if self.logging == 'OUT':
+            try:
+                previous_timesheet = Timesheet.objects.filter(
+                    employee=self.employee,
+                    logging='IN',
+                    recorded_datetime__lt=self.recorded_datetime
+                ).latest('recorded_datetime')
+
+                worked_time = self.recorded_datetime - previous_timesheet.recorded_datetime
+
+                hours, remainder = divmod(worked_time.seconds, 3600)
+                minutes, seconds = divmod(remainder, 60)
+
+                return f"{worked_time.days} days, {hours:02d}:{minutes:02d}:{seconds:02d}"
+            except Timesheet.DoesNotExist:
+                return "Incomplete clocking data"
+
+        return "Incomplete clocking data"
 
 
 class AnnualLeave(models.Model):
