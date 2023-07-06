@@ -3,6 +3,7 @@ from django.contrib.auth.models import User
 from django.dispatch import receiver
 from django.db.models.signals import post_save
 from django.utils.translation import gettext_lazy as _
+from datetime import timedelta, date
 
 class Business(models.Model):
 	""" Business model """
@@ -51,9 +52,7 @@ class Timesheet(models.Model):
 
     class Meta:
         get_latest_by = 'clocking_time'
-
-    def __unicode__(self):
-        return "%s checked %s at %s" % (self.employee, self.logging, self.clocking_time)
+        
 
     def worked_hours(self):
         if self.logging == 'OUT' and self.clocking_time and self.recorded_by_id:
@@ -86,11 +85,81 @@ class Timesheet(models.Model):
                 hours, remainder = divmod(worked_time.seconds, 3600)
                 minutes, seconds = divmod(remainder, 60)
 
-                return f"{worked_time.days} days, {hours:02d}:{minutes:02d}:{seconds:02d}"
+                return f"{hours:02d}:{minutes:02d}:{seconds:02d}"
             except Timesheet.DoesNotExist:
                 return "Incomplete clocking data"
 
         return "Incomplete clocking data"
+    
+    def get_clocking_time_in(self):
+        try:
+            return Timesheet.objects.filter(
+                employee=self.employee,
+                logging='IN',
+                recorded_datetime__lt=self.recorded_datetime
+            ).latest('recorded_datetime').recorded_datetime
+        except Timesheet.DoesNotExist:
+            return None
+
+    def format_hours_minutes(self, hours, minutes):
+        return f"{int(hours):02}:{int(minutes):02}"
+
+    def get_weekly_hours(self):
+        # Get the start date of the week (Monday)
+        week_start_date = self.clocking_time.date() - timedelta(days=self.clocking_time.weekday())
+
+        # Calculate the end date of the week (Sunday)
+        week_end_date = week_start_date + timedelta(days=6)
+
+        # Filter timesheets for the employee and week range
+        timesheets = Timesheet.objects.filter(
+            employee=self.employee,
+            logging='OUT',
+            clocking_time__date__range=[week_start_date, week_end_date]
+        )
+
+        # Calculate total worked hours for the week
+        total_hours = sum(
+            (timesheet.clocking_time - timesheet.get_clocking_time_in()).total_seconds()
+            for timesheet in timesheets
+        )
+
+        # Convert total seconds to hours and minutes
+        total_minutes, _ = divmod(total_hours, 60)
+        total_hours, minutes = divmod(total_minutes, 60)
+
+        return self.format_hours_minutes(total_hours, minutes)
+
+    def get_monthly_hours(self):
+        # Get the start date of the month
+        month_start_date = date(self.clocking_time.year, self.clocking_time.month, 1)
+
+        # Calculate the end date of the month
+        next_month = month_start_date.replace(day=28) + timedelta(days=4)
+        month_end_date = next_month - timedelta(days=next_month.day)
+
+        # Filter timesheets for the employee and month range
+        timesheets = Timesheet.objects.filter(
+            employee=self.employee,
+            logging='OUT',
+            clocking_time__date__range=[month_start_date, month_end_date]
+        )
+
+        # Calculate total worked hours for the month
+        total_hours = sum(
+            (timesheet.clocking_time - timesheet.get_clocking_time_in()).total_seconds()
+            for timesheet in timesheets
+        )
+
+        # Convert total seconds to hours and minutes
+        total_minutes, _ = divmod(total_hours, 60)
+        total_hours, minutes = divmod(total_minutes, 60)
+
+        return self.format_hours_minutes(total_hours, minutes)
+
+    def get_employee_name(self):
+        return f"{self.employee.first_name} {self.employee.last_name}" if self.employee else None
+    get_employee_name.short_description = 'Employee'  # Custom column header
 
 
 class AnnualLeave(models.Model):
@@ -105,13 +174,3 @@ class AnnualLeave(models.Model):
     date_to = models.DateTimeField()
     comments = models.TextField(max_length=500, blank=True, null=True)
 
-
-class SickLeave(models.Model):
-    """ Sick timesheet model """
-    employee  = models.ForeignKey(User, on_delete=models.CASCADE, related_name="%(app_label)s_%(class)s_employee")
-    recorded_by = models.ForeignKey(User, on_delete=models.CASCADE, null=True, related_name="%(app_label)s_%(class)s_recorded_by")   
-    recorded_datetime = models.DateTimeField(auto_now_add=True)
-    date_from = models.DateTimeField()
-    date_to = models.DateTimeField()
-    doctors_note_provided = models.BooleanField()
-    comments = models.TextField(blank=True, null=True)
