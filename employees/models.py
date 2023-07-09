@@ -6,12 +6,15 @@ from django.utils.translation import gettext_lazy as _
 from datetime import timedelta, date
 
 class Business(models.Model):
-	""" Business model """
-	name = models.CharField(max_length=1024)
+    """ Business model """
+    name = models.CharField(max_length=1024)
+    manager = models.ForeignKey(User, on_delete=models.CASCADE, blank=True, null=True)
+
 
 class JobRole(models.Model):
 	""" JobRole model """
 	title = models.CharField(max_length=1024)
+
 
 class EmployeeProfile(models.Model):
     """ Employee model """
@@ -22,6 +25,7 @@ class EmployeeProfile(models.Model):
     gender = models.CharField(max_length=1, choices=GENDER_CHOICES,blank=True, null=True)
     job_role = models.ForeignKey(JobRole,on_delete=models.CASCADE, blank=True, null=True)
     line_manager = models.ForeignKey(User,on_delete=models.CASCADE, blank=True, null=True,related_name="%(app_label)s_%(class)s_line_manager")
+    company = models.ForeignKey(Business, on_delete=models.CASCADE, blank=True, null=True)
     start_date = models.DateField(blank=True, null=True)
     end_date = models.DateField(null=True, blank=True)
    
@@ -41,6 +45,7 @@ class Timesheet(models.Model):
     LOGGING_CHOICES = (('IN', _('In')), ('OUT', _('Out')))
     # employee who recorded
     employee = models.ForeignKey(User, on_delete=models.CASCADE, related_name="%(app_label)s_%(class)s_employee")
+    company = models.ForeignKey(Business, on_delete=models.CASCADE, blank=True, null=True)
     recorded_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name="%(app_label)s_%(class)s_recorded_by")   
     recorded_datetime = models.DateTimeField(auto_now_add=True)
     clocking_time = models.DateTimeField(null=True)

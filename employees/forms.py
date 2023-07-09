@@ -1,12 +1,15 @@
 from allauth.account.forms import SignupForm
 from django import forms
-from .models import Timesheet
+from .models import Timesheet, Business
+
+class RegisterBusinessForm()
 
 
 class EmployeeSignupForm(SignupForm):
 
     first_name = forms.CharField(max_length=30, label='First Name')
     last_name = forms.CharField(max_length=30, label='Last Name')
+    company = forms.ModelChoiceField(queryset=Business.objects.all())
  
     def save(self, request):
         user = super(EmployeeSignupForm, self).save(request)
