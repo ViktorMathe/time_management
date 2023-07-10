@@ -7,7 +7,8 @@ from datetime import timedelta, date
 
 class Business(models.Model):
     """ Business model """
-    name = models.CharField(max_length=1024)
+    business_name = models.CharField(max_length=1024)
+    business_id = models.CharField(max_length=1024, blank=True, null=True)
     manager = models.ForeignKey(User, on_delete=models.CASCADE, blank=True, null=True)
 
 

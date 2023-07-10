@@ -5,7 +5,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.template.context_processors import csrf
 from django.contrib.auth.decorators import login_required
 from .models import Timesheet, AnnualLeave, EmployeeProfile
-from .forms import ClockingForm
+from .forms import ClockingForm, RegisterBusinessForm
 from datetime import datetime, date
 from django.utils.timezone import utc
 
@@ -211,3 +211,18 @@ def loggedin(request):  # Define function, accept a request
     
     # Responds with passing the object items (contains info from the DB) to the template loggedin.html 
     return render(request, 'loggedin.html', context)
+
+
+def business_register(request):
+    form = RegisterBusinessForm()
+    if request.method == "POST":
+        form = RegisterBusinessForm(request.POST)
+        if form.is_valid():
+           form.save(request)
+           return redirect('home')
+        else:
+           form = RegisterBusinessForm()
+
+    context = {'form':form}
+    return render(request, "reg_business.html", context)
+
