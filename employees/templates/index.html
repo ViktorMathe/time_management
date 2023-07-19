@@ -7,7 +7,8 @@
 		<ul>
 			<li><a href="#tabs-1">Employee Clock In/Out</a></li>
 			<li><a href="#tabs-2">Holiday Request</a></li>
-			<li><a href="#tabs-3">Manager Login</a></li>
+			<li><a href="#tabs-3">Employee Login</a></li>
+			<li><a href="#tabs-4">Manager Login</a></li>
 		</ul>
 		<div id="tabs-1">
 			{% csrf_token %}
@@ -84,9 +85,64 @@
 			</form>	
 		</div>
 		<div id="tabs-3">
-			<p>tab3</p>
+			{% if user.is_authenticated %}
+			<h3>Employee test</h3>
+			<form method="post" action="{% url 'account_logout' %}">
+				{% csrf_token %}
+				{% if redirect_field_value %}
+				<input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}"/>
+				{% endif %}
+				<button type="submit">Sign Out</button>
+			</form>
+			{% else %}
+			<h3>Employee Sign In</h3>
+
+			<p>If you have not created an account yet, then please
+			<a href="{% url 'account_signup' %}">sign up</a> first.</p>
+
+			<form class="login" method="POST" action="{% url 'account_login' %}">
+			{% csrf_token %}
+			{{ login_form.as_p }}
+			{% if redirect_field_value %}
+			<input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}" />
+			{% endif %}
+			<a class="button secondaryAction" href="{% url 'account_reset_password' %}">"Forgot Password?"</a>
+			<button class="primaryAction" type="submit">Sign In</button>
+			</form>
+
+			{% endif %}
 		</div>
-	</div>
+		<div id="tabs-4">
+
+			{% if user.is_authenticated %}
+			<h3>Manager test</h3>
+			<form method="post" action="{% url 'account_logout' %}">
+				{% csrf_token %}
+				{% if redirect_field_value %}
+				<input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}"/>
+				{% endif %}
+				<button type="submit">Sign Out</button>
+			</form>
+			{% else %}
+			<h3>Manager Sign In</h3>
+
+			<p>If you have not created an account yet, then please
+			<a href="{% url 'business_reg' %}">sign up</a> first.</p>
+
+			<form class="login" method="POST" action="{% url 'account_login' %}">
+			{% csrf_token %}
+			{{ login_form.as_p }}
+			{% if redirect_field_value %}
+			<input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}" />
+			{% endif %}
+			<a class="button secondaryAction" href="{% url 'account_reset_password' %}">"Forgot Password?"</a>
+			<button class="primaryAction" type="submit">Sign In</button>
+			</form>
+
+			{% endif %}
+
+
+		</div>
 	<!--------------
 	<div>{{ error_message }}</div>
 	<form action="" method="post">{% csrf_token %}

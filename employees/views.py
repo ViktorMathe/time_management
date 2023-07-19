@@ -6,6 +6,7 @@ from django.template.context_processors import csrf
 from django.contrib.auth.decorators import login_required
 from .models import Timesheet, AnnualLeave, EmployeeProfile
 from .forms import ClockingForm, RegisterBusinessForm
+from allauth.account.forms import LoginForm
 from datetime import datetime, date
 from django.utils.timezone import utc
 
@@ -71,6 +72,8 @@ def clock_action(request):
 
 def index(request):
     error_message = ""
+    login_form = LoginForm()
+
     if request.method == "POST":
         # Retrieve form data
         employee_id = request.POST.get('employee_id', '')
@@ -91,7 +94,7 @@ def index(request):
         else:
             error_message = "Incorrect Username/Password.\n"
 
-    context = {'error_message': error_message}
+    context = {'error_message': error_message, 'login_form':login_form}
     return render(request, "index.html", context)
 
 def timesheet_success(request, in_or_out): # Define function, accept a request and in_or_out
@@ -219,6 +222,7 @@ def business_register(request):
         form = RegisterBusinessForm(request.POST)
         if form.is_valid():
            form.save(request)
+           logout(request)
            return redirect('home')
         else:
            form = RegisterBusinessForm()

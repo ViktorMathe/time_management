@@ -8,13 +8,25 @@ from datetime import timedelta, date
 class Business(models.Model):
     """ Business model """
     business_name = models.CharField(max_length=1024)
-    business_id = models.CharField(max_length=1024, blank=True, null=True)
     manager = models.ForeignKey(User, on_delete=models.CASCADE, blank=True, null=True)
+
+    def __str__(self):
+        return self.business_name
 
 
 class JobRole(models.Model):
 	""" JobRole model """
 	title = models.CharField(max_length=1024)
+
+
+class ManagerProfile(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    phone_number = models.IntegerField(blank=True, null=True)
+    company = models.ForeignKey(Business, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return self.user.first_name + " " + self.user.last_name
+
 
 
 class EmployeeProfile(models.Model):
@@ -32,13 +44,6 @@ class EmployeeProfile(models.Model):
    
     def __str__(self):
         return self.user.first_name + " " + self.user.last_name
-
-
-@receiver(post_save, sender=User)
-def create_user_profile(sender, instance, created, **kwargs):
-    """Create a matching profile whenever a User is created."""
-    if created:
-        EmployeeProfile.objects.create(user=instance)
 
 
 class Timesheet(models.Model):
