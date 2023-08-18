@@ -2,6 +2,7 @@ from django import forms
 from allauth.account.forms import SignupForm
 from django.contrib.auth.models import User
 from .models import EmployeeProfile, JobRole
+from manager.models import Business
 
 
 class EmployeeSignupForm(SignupForm):

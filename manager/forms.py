@@ -49,7 +49,7 @@ class RegisterBusinessForm(forms.ModelForm):
         return business
 
 
-    class ManagerProfileForm(forms.ModelForm):
-        class Meta:
-            model = ManagerProfile
-            fields = ('user_first_name', 'user_last_name', )
+class ManagerProfileForm(forms.ModelForm):
+    class Meta:
+        model = ManagerProfile
+        fields = '__all__'

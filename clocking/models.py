@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
+from manager.models import Business
 from django.utils.translation import gettext_lazy as _
 from datetime import timedelta, date
 
