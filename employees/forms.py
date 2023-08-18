@@ -77,3 +77,15 @@ class ClockingForm(forms.ModelForm):
     class Meta:
         model = Timesheet
         fields = ['logging']
+
+
+class EmployeeProfileForm(forms.ModelForm):
+    class Meta:
+        model = EmployeeProfile
+        fields = ('user', 'phone_number', 'birth_date', 'gender', 'line_manager', 'company', 'start_date', )
+        exclude = ('approved', )
+
+class ManagerProfileForm(forms.ModelForm):
+    class Meta:
+        model = ManagerProfile
+        fields = ('user_first_name', 'user_last_name', )

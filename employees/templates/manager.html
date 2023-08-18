@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+
+<div class="container">
+    <div class="row">
+        <div class="col">
+            <hr>
+            <h2 class="text p-2 mb-4">My Profile</h2>
+            <hr>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-12 col-lg-6">
+            <form class="mt-3 profile-update-form text" action="{% url 'manager' %}" method="POST"
+                id="profile-update-form">
+                {% csrf_token %}
+                {{ form.as_p }}
+                <button class="btn rounded-2 text float-right border mt-2">Update Information</button>
+            </form>
+        </div>
+    {% for employee in employees %}
+        <p>{{ employee.user.first_name}} {{ employee.user.last_name }}</p>
+        <p>{{ employee.get_approved_display }}</p>
+        <p>{{employee.start_date}}</p>
+
+    {% endfor %}
+
+{% endblock %}

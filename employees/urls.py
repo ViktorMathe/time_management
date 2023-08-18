@@ -9,4 +9,6 @@ urlpatterns = [
 	path('mgnt_clocking/', views.mgnt_clocking),
 	path('holiday_request/', views.holiday_request_action),
 	path('loggedin/', views.loggedin),
+	path('profile/', views.employee_profile, name='profile'),
+	path('manager/', views.manager_site, name='manager'),
 ]

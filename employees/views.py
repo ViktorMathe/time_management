@@ -4,8 +4,8 @@ from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login, logout
 from django.template.context_processors import csrf
 from django.contrib.auth.decorators import login_required
-from .models import Timesheet, AnnualLeave, EmployeeProfile
-from .forms import ClockingForm, RegisterBusinessForm
+from .models import Timesheet, AnnualLeave, EmployeeProfile, ManagerProfile
+from .forms import ClockingForm, RegisterBusinessForm, EmployeeProfileForm, EmployeeSignupForm, ManagerProfileForm
 from allauth.account.forms import LoginForm
 from datetime import datetime, date
 from django.utils.timezone import utc
@@ -230,3 +230,38 @@ def business_register(request):
     context = {'form':form}
     return render(request, "reg_business.html", context)
 
+
+def employee_profile(request):
+    employee = get_object_or_404(EmployeeProfile, user=request.user)
+    if request.method == 'POST':
+        form = EmployeeProfileForm(request.POST, instance=employee)
+        if form.is_valid():
+            form.save()
+    else:
+        form = EmployeeProfileForm(instance=employee)
+
+    template = 'profile.html'
+    context= {
+        'form': form,
+    }
+    return render(request, template, context)
+
+
+def manager_site(request):
+    manager = get_object_or_404(ManagerProfile, user=request.user)
+    all_employee = EmployeeProfile.objects.all()
+    employees = all_employee.filter(company=manager.company)
+    if request.method == 'POST':
+        form = ManagerProfileForm(request.POST, instance=manager)
+        print(form)
+        if form.is_valid():
+            form.save()
+    else:
+        form = ManagerProfileForm(instance=manager)
+    
+    template = 'manager.html'
+    context = {
+        'form': form,
+        'employees': employees,
+    }
+    return render(request, template, context)
