@@ -1,5 +1,6 @@
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from django.http import HttpResponseRedirect
+from django.contrib.auth import authenticate, login, logout
 from .forms import RegisterBusinessForm, ManagerProfileForm
 from .models import ManagerProfile
 from employees.models import EmployeeProfile, AnnualLeave

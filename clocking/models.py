@@ -2,7 +2,7 @@ from django.db import models
 from django.contrib.auth.models import User
 from manager.models import Business
 from django.utils.translation import gettext_lazy as _
-from datetime import timedelta, date
+from datetime import timedelta, date, datetime
 
 
 # Create your models here.
@@ -89,14 +89,16 @@ class Timesheet(models.Model):
             clocking_time__date__range=[week_start_date, week_end_date]
         )
 
-        # Calculate total worked hours for the week
-        total_hours = sum(
-            (timesheet.clocking_time - timesheet.get_clocking_time_in()).total_seconds()
-            for timesheet in timesheets
-        )
+        total_hours = 0  # Initialize the total hours
+
+        for timesheet in timesheets:
+            clocking_time_in = timesheet.get_clocking_time_in()
+            if clocking_time_in:
+                time_difference = (timesheet.clocking_time - clocking_time_in).total_seconds()
+                total_hours += time_difference / 3600
 
         # Convert total seconds to hours and minutes
-        total_minutes, _ = divmod(total_hours, 60)
+        total_minutes, _ = divmod(total_hours * 3600, 60)
         total_hours, minutes = divmod(total_minutes, 60)
 
         return self.format_hours_minutes(total_hours, minutes)
@@ -116,14 +118,16 @@ class Timesheet(models.Model):
             clocking_time__date__range=[month_start_date, month_end_date]
         )
 
-        # Calculate total worked hours for the month
-        total_hours = sum(
-            (timesheet.clocking_time - timesheet.get_clocking_time_in()).total_seconds()
-            for timesheet in timesheets
-        )
+        total_hours = 0  # Initialize the total hours
+
+        for timesheet in timesheets:
+            clocking_time_in = timesheet.get_clocking_time_in()
+            if clocking_time_in:
+                time_difference = (timesheet.clocking_time - clocking_time_in).total_seconds()
+                total_hours += time_difference / 3600
 
         # Convert total seconds to hours and minutes
-        total_minutes, _ = divmod(total_hours, 60)
+        total_minutes, _ = divmod(total_hours * 3600, 60)
         total_hours, minutes = divmod(total_minutes, 60)
 
         return self.format_hours_minutes(total_hours, minutes)
