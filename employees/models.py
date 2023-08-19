@@ -22,11 +22,17 @@ class EmployeeProfile(models.Model):
     line_manager = models.ForeignKey(ManagerProfile, on_delete=models.CASCADE, blank=True, null=True,related_name="%(app_label)s_%(class)s_line_manager")
     approved = models.BooleanField(choices=APPROVED, default=0)
     company = models.ForeignKey(Business, on_delete=models.CASCADE, blank=True, null=True)
-    start_date = models.DateField(blank=True, null=True)
+    start_date = models.DateField(default=None, blank=True, null=True)
     end_date = models.DateField(null=True, blank=True)
    
     def __str__(self):
         return self.user.first_name + " " + self.user.last_name
+
+    def save(self, *args, **kwargs):
+        # Set the start_date to the user's date_joined when it's not provided
+        if not self.start_date and self.user:
+            self.start_date = self.user.date_joined.date()
+        super(EmployeeProfile, self).save(*args, **kwargs)
 
 
 class AnnualLeave(models.Model):
