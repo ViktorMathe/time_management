@@ -2,6 +2,7 @@ from django import forms
 from django.contrib.auth import login
 from django.contrib.auth.models import User
 from .models import Business, ManagerProfile
+from employees.models import EmployeeProfile
 
 class RegisterBusinessForm(forms.ModelForm):
     manager_username = forms.CharField(max_length=30, label='Manager Username')
@@ -53,3 +54,9 @@ class ManagerProfileForm(forms.ModelForm):
     class Meta:
         model = ManagerProfile
         fields = '__all__'
+
+
+class EmployeeApprovalForm(forms.ModelForm):
+    class Meta:
+        model = EmployeeProfile
+        fields = ('approved', )

@@ -12,15 +12,15 @@ class JobRole(models.Model):
 
 class EmployeeProfile(models.Model):
     """ Employee model """
+    APPROVE_CHOICES = ((0, 'Pending'), (1, 'Approved'))
     GENDER_CHOICES = (('M', _('Male')), ('F', _('Female')))
-    APPROVED = ((0,'Pending'), (1, 'Approved'))
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     phone_number = models.IntegerField(blank=True, null=True)
     birth_date = models.DateField(blank=True, null=True)
     gender = models.CharField(max_length=1, choices=GENDER_CHOICES,blank=True, null=True)
     job_role = models.ForeignKey(JobRole,on_delete=models.CASCADE, blank=True, null=True)
     line_manager = models.ForeignKey(ManagerProfile, on_delete=models.CASCADE, blank=True, null=True,related_name="%(app_label)s_%(class)s_line_manager")
-    approved = models.BooleanField(choices=APPROVED, default=0)
+    approved = models.BooleanField(choices=APPROVE_CHOICES, default=0)
     company = models.ForeignKey(Business, on_delete=models.CASCADE, blank=True, null=True)
     start_date = models.DateField(default=None, blank=True, null=True)
     end_date = models.DateField(null=True, blank=True)

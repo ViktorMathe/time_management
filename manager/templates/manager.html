@@ -21,7 +21,7 @@
             </form>
         </div>
     {% for employee in employees %}
-        <p>{{ employee.user.first_name}} {{ employee.user.last_name }}</p>
+        <a href="{% url 'approve' employee.id %}">{{ employee.user.first_name}} {{ employee.user.last_name }}</a>
         <p>{{ employee.get_approved_display }}</p>
         <p>{{employee.start_date}}</p>
 

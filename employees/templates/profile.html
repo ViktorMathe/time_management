@@ -11,11 +11,11 @@
             <h2 class="text p-2 mb-4">My Profile</h2>
             <hr>
         </div>
-        {% if employee.approved == Pending %}
+        {% if employee.approved == False %}
         <div class="row">
         <p> Your account has NOT been approved yet. Please contact with your manager</p>
         </div>
-        {% elif employee.approved == Approved %}
+        {% else %}
     </div>
     <div class="row">
         <div class="col-12 col-lg-6">

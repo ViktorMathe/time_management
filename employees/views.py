@@ -33,7 +33,7 @@ def index(request):
         else:
             error_message = "Incorrect Username/Password.\n"
 
-    context = {'error_message': error_message, 'login_form':login_form}
+    context = {'error_message': error_message, 'login_form':login_form,}
     return render(request, "index.html", context)
 
 
@@ -93,6 +93,7 @@ def holiday_request_action(request, action, holiday_request_id): # Define functi
         return render("loggedin.html", {'error_message':error_message}, context_instance=RequestContext(request))
 
 
+@login_required
 def employee_profile(request):
     employee = get_object_or_404(EmployeeProfile, user=request.user)
     if request.method == 'POST':
@@ -105,5 +106,6 @@ def employee_profile(request):
     template = 'profile.html'
     context= {
         'form': form,
+        'employee': employee,
     }
     return render(request, template, context)

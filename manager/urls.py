@@ -6,4 +6,5 @@ urlpatterns = [
     path('manager/', views.manager_site, name='manager'),
     path('loggedin/', views.loggedin),
     path('mgnt_clocking/', views.mgnt_clocking),
+    path('approval/<employee_id>', views.approve_employee, name='approve')
 ]

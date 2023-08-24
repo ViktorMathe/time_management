@@ -1,7 +1,7 @@
 from django.shortcuts import render, get_object_or_404
 from django.http import HttpResponseRedirect
 from django.contrib.auth import authenticate, login, logout
-from .forms import RegisterBusinessForm, ManagerProfileForm
+from .forms import RegisterBusinessForm, ManagerProfileForm, EmployeeApprovalForm
 from .models import ManagerProfile
 from employees.models import EmployeeProfile, AnnualLeave
 from clocking.models import Timesheet
@@ -29,20 +29,36 @@ def manager_site(request):
     all_employee = EmployeeProfile.objects.all()
     employees = all_employee.filter(company=manager.company)
     if request.method == 'POST':
-        form = ManagerProfileForm(request.POST, instance=manager)
-        print(form)
-        if form.is_valid():
-            form.save()
+        manager_form = ManagerProfileForm(request.POST, instance=manager)
+        if manager_form.is_valid():
+            manager_form.save()
     else:
-        form = ManagerProfileForm(instance=manager)
+        manager_form = ManagerProfileForm(instance=manager)
     
     template = 'manager.html'
     context = {
-        'form': form,
+        'manager_form': manager_form,
         'employees': employees,
     }
     return render(request, template, context)
 
+def approve_employee(request, employee_id):
+    employee = get_object_or_404(EmployeeProfile, pk=employee_id)
+    if request.method == 'POST':
+        approval_form = EmployeeApprovalForm(request.POST, instance=employee)
+        if approval_form.is_valid():
+            EmployeeProfile.objects.filter(pk=employee_id).update(approved=1)
+            approval_form.save()
+    else:
+        approval_form = EmployeeApprovalForm(instance=employee)
+
+    
+    template = 'approval.html'
+    context ={
+        'employee': employee,
+        'approval_form': approval_form
+    }
+    return render(request, template, context)
 
 @login_required
 def mgnt_clocking(request): #Define function, accept a request 
