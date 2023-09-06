@@ -1,6 +1,9 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
 <form method="post">
   {% csrf_token %}
-  {{ form.as_p }}
+  {{ business_form.as_p }}
 
   {% if error_message %}
     <p class="error">{{ error_message }}</p>
@@ -8,3 +11,4 @@
 
   <button type="submit">Register Business</button>
 </form>
+{% endblock %}

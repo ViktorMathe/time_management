@@ -1,41 +1,30 @@
 from django.http import HttpResponse, HttpResponseRedirect
 from django.contrib import messages
 from django.shortcuts import render, get_object_or_404, redirect
-from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from .models import AnnualLeave, EmployeeProfile
 from .forms import EmployeeProfileForm, EmployeeSignupForm
-from allauth.account.forms import LoginForm
 from datetime import datetime, date
-from clocking.views import clock_action
 
 
-def index(request):
-    error_message = ""
-    login_form = LoginForm()
+@login_required
+def employee_profile(request):
+    employee = get_object_or_404(EmployeeProfile, user=request.user)
+    if request.method == 'POST':
+        form = EmployeeProfileForm(request.POST, instance=employee)
+        if form.is_valid():
+            form.save()
+            messages.success(
+                request, 'Your profile information has been updated!')
+    else:
+        form = EmployeeProfileForm(instance=employee)
 
-    if request.method == "POST":
-        # Retrieve form data
-        employee_id = request.POST.get('employee_id', '')
-        password = request.POST.get('password', '')
-        
-        # Authenticate the user
-        user = authenticate(request, username=employee_id, password=password)
-        
-        if user is not None:
-            login(request, user)  # Log in the authenticated user
-            if 'clock_action' in request.POST:
-                return clock_action(request)
-            elif 'holiday_request' in request.POST:
-                return holiday_request(request, user)
-            else:
-                logout(request)  # Log out the user after form submission
-                return redirect('home')  # Redirect to the homepage or any other desired page
-        else:
-            messages.error(request, "Incorrect Username/Password.")
-
-    context = {'error_message': error_message, 'login_form':login_form,}
-    return render(request, "index.html", context)
+    template = 'profile.html'
+    context= {
+        'form': form,
+        'employee': employee,
+    }
+    return render(request, template, context)
 
 
 def holiday_request(request, user):
@@ -92,23 +81,3 @@ def holiday_request_action(request, action, holiday_request_id): # Define functi
         # display error massage
         error_message = "Incorrect Holiday Request Action.\n"
         return render("loggedin.html", {'error_message':error_message}, context_instance=RequestContext(request))
-
-
-@login_required
-def employee_profile(request):
-    employee = get_object_or_404(EmployeeProfile, user=request.user)
-    if request.method == 'POST':
-        form = EmployeeProfileForm(request.POST, instance=employee)
-        if form.is_valid():
-            form.save()
-            messages.success(
-                request, 'Your profile information has been updated!')
-    else:
-        form = EmployeeProfileForm(instance=employee)
-
-    template = 'profile.html'
-    context= {
-        'form': form,
-        'employee': employee,
-    }
-    return render(request, template, context)

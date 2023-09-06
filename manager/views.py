@@ -9,17 +9,17 @@ from django.contrib.auth.decorators import login_required
 
 # Create your views here.
 def business_register(request):
-    form = RegisterBusinessForm()
+    business_form = RegisterBusinessForm()
     if request.method == "POST":
-        form = RegisterBusinessForm(request.POST)
-        if form.is_valid():
-           form.save(request)
+        business_form = RegisterBusinessForm(request.POST)
+        if business_form.is_valid():
+           business_form.save(request)
            logout(request)
            return redirect('home')
         else:
-           form = RegisterBusinessForm()
+           business_form = RegisterBusinessForm()
 
-    context = {'form':form}
+    context = {'business_form':business_form}
     return render(request, "reg_business.html", context)
 
 
@@ -31,6 +31,7 @@ def manager_site(request):
     if request.method == 'POST':
         manager_form = ManagerProfileForm(request.POST, instance=manager)
         if manager_form.is_valid():
+            manager_form.company = manager.company
             manager_form.save()
     else:
         manager_form = ManagerProfileForm(instance=manager)
