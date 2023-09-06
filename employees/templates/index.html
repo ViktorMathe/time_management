@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% block title %}Home{% endblock %}
-	{% block content %}
-	<div id="content">
+{% block content %}
+<div id="content">
 	<!-------------->
 	<div id="tabs">
 		<ul>
@@ -16,73 +16,75 @@
 			<form action="" method="post">
 				{% csrf_token %}
 				<fieldset>
-				  <legend>Clock In/Out</legend>
-				  <div></div>
-				  <table>
-					<tr>
-					  <td>Employee ID:</td>
-					  <td><input type="text" name="employee_id"></td>
-					</tr>
-					<tr>
-					  <td>Password:</td>
-					  <td><input type="password" name="password"></td>
-					</tr>
-					<tr>
-					  <td>Logging:</td>
-					  <td>
-						<select name="logging">
-						  <option value="IN">Clock In</option>
-						  <option value="OUT">Clock Out</option>
-						</select>
-					  </td>
-					</tr>
-					<tr>
-					  <td></td>
-					  <td>
-						{% csrf_token %}
-						<input type="submit" name="clock_action" value="Submit">
-					  </td>
-					</tr>
-				  </table>
+					<legend>Clock In/Out</legend>
+					<div></div>
+					<table>
+						<tr>
+							<td>Employee ID:</td>
+							<td><input type="text" name="employee_id"></td>
+						</tr>
+						<tr>
+							<td>Password:</td>
+							<td><input type="password" name="password"></td>
+						</tr>
+						<tr>
+							<td>Logging:</td>
+							<td>
+								<select name="logging">
+									<option value="IN">Clock In</option>
+									<option value="OUT">Clock Out</option>
+								</select>
+							</td>
+						</tr>
+						<tr>
+							<td></td>
+							<td>
+								{% csrf_token %}
+								<input type="submit" name="clock_action" value="Submit">
+							</td>
+						</tr>
+					</table>
 				</fieldset>
-			  </form>
-			  
-		</div>
-		<div id="tabs-2">	
-			<form action="" method="post">{% csrf_token %}
-			  <fieldset>
-				<legend>Holiday Request Form</legend>
-				<div></div>
-				<table>
-					<tr>
-						<td>Employee ID:</td>
-						<td> <input type="text" name="employee_id"></td>
-					</tr>
-					<tr>
-						<td>Password:</td>
-						<td><input type="password" name="password"></td>
-					</tr>
-					<tr>
-						<td>Date and time from:</td><!--
-						<td><input type="datetime" name="date_time_from"></td>-->
-						<td><input type="datetime" class="date start" name="date_from" id="date_from">
-						<input type="datetime" class="time start" name="time_from" id="time_from"></td>
-					</tr>
-					<tr>
-						<td>Date and time to:</td><!--
-						<td><input type="datetime" name="date_time_to"></td>-->
-						<td>
-						<input type="datetime" class="date end" name="date_to" id="date_to">
-						<input type="datetime" class="time end"  name="time_to" id="time_to"></td>
-					</tr>
+			</form>
 
-					<tr>
-						<td></td>
-						<td><input type="submit" name="holiday_request" value="HolidayRequest">
-					</tr>
-				</table>
-			  </fieldset>
-			</form>	
+		</div>
+		<div id="tabs-2">
+			<form action="" method="post">{% csrf_token %}
+				<fieldset>
+					<legend>Holiday Request Form</legend>
+					<div></div>
+					<table>
+						<tr>
+							<td>Employee ID:</td>
+							<td> <input type="text" name="employee_id"></td>
+						</tr>
+						<tr>
+							<td>Password:</td>
+							<td><input type="password" name="password"></td>
+						</tr>
+						<tr>
+							<td>Date and time from:</td><!--
+						<td><input type="datetime" name="date_time_from"></td>-->
+							<td><input type="datetime" class="date start" name="date_from" id="date_from">
+								<input type="datetime" class="time start" name="time_from" id="time_from">
+							</td>
+						</tr>
+						<tr>
+							<td>Date and time to:</td><!--
+						<td><input type="datetime" name="date_time_to"></td>-->
+							<td>
+								<input type="datetime" class="date end" name="date_to" id="date_to">
+								<input type="datetime" class="time end" name="time_to" id="time_to">
+							</td>
+						</tr>
+
+						<tr>
+							<td></td>
+							<td><input type="submit" name="holiday_request" value="HolidayRequest">
+						</tr>
+					</table>
+				</fieldset>
+			</form>
 		</div>
 		<div id="tabs-3">
 			{% if user.is_authenticated %}
@@ -90,7 +92,7 @@
 			<form method="post" action="{% url 'account_logout' %}">
 				{% csrf_token %}
 				{% if redirect_field_value %}
-				<input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}"/>
+				<input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}" />
 				{% endif %}
 				<button type="submit">Sign Out</button>
 			</form>
@@ -99,16 +101,17 @@
 			<h3>Employee Sign In</h3>
 
 			<p>If you have not created an account yet, then please
-			<a href="{% url 'account_signup' %}">sign up</a> first.</p>
+				<a href="{% url 'account_signup' %}">sign up</a> first.
+			</p>
 
 			<form class="login" method="POST" action="{% url 'account_login' %}">
-			{% csrf_token %}
-			{{ login_form.as_p }}
-			{% if redirect_field_value %}
-			<input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}" />
-			{% endif %}
-			<a class="button secondaryAction" href="{% url 'account_reset_password' %}">"Forgot Password?"</a>
-			<button class="primaryAction" type="submit">Sign In</button>
+				{% csrf_token %}
+				{{ login_form.as_p }}
+				{% if redirect_field_value %}
+				<input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}" />
+				{% endif %}
+				<a class="button secondaryAction" href="{% url 'account_reset_password' %}">"Forgot Password?"</a>
+				<button class="primaryAction" type="submit">Sign In</button>
 			</form>
 
 			{% endif %}
@@ -120,7 +123,7 @@
 			<form method="post" action="{% url 'account_logout' %}">
 				{% csrf_token %}
 				{% if redirect_field_value %}
-				<input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}"/>
+				<input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}" />
 				{% endif %}
 				<button type="submit">Sign Out</button>
 			</form>
@@ -128,23 +131,24 @@
 			<h3>Manager Sign In</h3>
 
 			<p>If you have not created an account yet, then please
-			<a href="{% url 'business_reg' %}">sign up</a> first.</p>
+				<a href="{% url 'business_reg' %}">sign up</a> first.
+			</p>
 
 			<form class="login" method="POST" action="{% url 'account_login' %}">
-			{% csrf_token %}
-			{{ login_form.as_p }}
-			{% if redirect_field_value %}
-			<input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}" />
-			{% endif %}
-			<a class="button secondaryAction" href="{% url 'account_reset_password' %}">"Forgot Password?"</a>
-			<button class="primaryAction" type="submit">Sign In</button>
+				{% csrf_token %}
+				{{ login_form.as_p }}
+				{% if redirect_field_value %}
+				<input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}" />
+				{% endif %}
+				<a class="button secondaryAction" href="{% url 'account_reset_password' %}">"Forgot Password?"</a>
+				<button class="primaryAction" type="submit">Sign In</button>
 			</form>
 
 			{% endif %}
 
 
 		</div>
-	<!--------------
+		<!--------------
 	<div>{{ error_message }}</div>
 	<form action="" method="post">{% csrf_token %}
 	  <fieldset>
@@ -218,15 +222,4 @@
 		</div>
 	</div>
 	-------------->
-{% endblock %}
-{% block javascript_footer %}
-	<script>
-		$(function() {
-			$( "#tabs" ).tabs();
-		});
-		$('#date_to').datepicker({"dateFormat":"yy-mm-dd"});
-		$('#date_from').datepicker({"dateFormat":"yy-mm-dd"});
-		$('#time_to').timepicker({ 'timeFormat': 'H:i' });
-		$('#time_from').timepicker({ 'timeFormat': 'H:i' });
-	</script>
 {% endblock %}

@@ -32,7 +32,7 @@ def index(request):
                 logout(request)  # Log out the user after form submission
                 return redirect('home')  # Redirect to the homepage or any other desired page
         else:
-            error_message = "Incorrect Username/Password.\n"
+            messages.error(request, "Incorrect Username/Password.")
 
     context = {'error_message': error_message, 'login_form':login_form,}
     return render(request, "index.html", context)
