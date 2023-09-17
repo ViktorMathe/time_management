@@ -1,0 +1,7 @@
+.gray{
+    --bs-table-bg: lightslategray;
+    --bs-table-color: whitesmoke;
+};
+.white{
+    --bs-table-bg: whitesmoke;
+};

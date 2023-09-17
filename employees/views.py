@@ -4,7 +4,10 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from .models import AnnualLeave, EmployeeProfile
 from .forms import EmployeeProfileForm, EmployeeSignupForm
+from clocking.models import Timesheet
 from datetime import datetime, date
+from itertools import groupby
+from operator import attrgetter
 
 
 @login_required
@@ -24,6 +27,17 @@ def employee_profile(request):
         'form': form,
         'employee': employee,
     }
+    return render(request, template, context)
+
+@login_required
+def view_timesheets(request):
+    timesheets = Timesheet.objects.all().filter(employee=request.user)
+    grouped_timesheets = {}
+    for key, group in groupby(timesheets, key=attrgetter('clocking_time.year', 'clocking_time.month')):
+        year, month = key
+        grouped_timesheets[f"{year}/{month}"] = list(group)
+    template = 'timesheet.html'
+    context = {'timesheets': timesheets, 'grouped_timesheets': grouped_timesheets}
     return render(request, template, context)
 
 

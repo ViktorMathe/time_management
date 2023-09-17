@@ -62,15 +62,15 @@
                                 </a>
                             </div>
                             <div>
-                                <a class="nav-link" href="#">
-                                    <i class="text fa-solid fa-envelope"></i>
-                                    Contact Us
+                                <a class="nav-link" href="{% url 'timesheets' %}">
+                                    <i class="text fa-solid fa-clock"></i>
+                                    Timesheets
                                 </a>
                             </div>
                             <div>
                                 <a class="nav-link" href="#">
-                                    <i class="text fa-solid fa-star"></i>
-                                    Reviews
+                                    <i class="fa-regular fa-sun"></i>
+                                    Holidays
                                 </a>
                             </div>
                             {% if request.user.is_superuser %}

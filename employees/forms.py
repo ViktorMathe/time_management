@@ -3,6 +3,10 @@ from allauth.account.forms import SignupForm
 from django.contrib.auth.models import User
 from .models import EmployeeProfile, JobRole
 from manager.models import Business
+import datetime
+
+class DateInput(forms.DateInput):
+    input_type = 'date'
 
 
 class EmployeeSignupForm(SignupForm):
@@ -31,4 +35,7 @@ class EmployeeProfileForm(forms.ModelForm):
         model = EmployeeProfile
         fields = ('phone_number', 'birth_date', 'gender', )
         exclude = ('user','line_manager','company','start_date','approved', )
+
+        widgets = { 'birth_date': DateInput()
+        }
 
