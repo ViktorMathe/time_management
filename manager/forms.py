@@ -14,6 +14,7 @@ class RegisterBusinessForm(forms.ModelForm):
     class Meta:
         model = Business
         fields = ['business_name']
+        
 
     def clean(self):
         cleaned_data = super().clean()
@@ -54,6 +55,12 @@ class ManagerProfileForm(forms.ModelForm):
     class Meta:
         model = ManagerProfile
         fields = '__all__'
+        exclude = ('user','company',)
+
+    def manager_company(self, obj):
+        return obj.company
+
+    
 
 
 class EmployeeApprovalForm(forms.ModelForm):

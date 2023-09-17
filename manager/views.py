@@ -1,5 +1,6 @@
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, get_object_or_404, redirect
 from django.http import HttpResponseRedirect
+from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from .forms import RegisterBusinessForm, ManagerProfileForm, EmployeeApprovalForm
 from .models import ManagerProfile
@@ -25,19 +26,22 @@ def business_register(request):
 
 @login_required
 def manager_site(request):
-    manager = get_object_or_404(ManagerProfile, user=request.user)
-    all_employee = EmployeeProfile.objects.all()
-    employees = all_employee.filter(company=manager.company)
-    if request.method == 'POST':
-        manager_form = ManagerProfileForm(request.POST, instance=manager)
-        if manager_form.is_valid():
-            manager_form.company = manager.company
-            manager_form.save()
-    else:
-        manager_form = ManagerProfileForm(instance=manager)
+    try:
+        manager = get_object_or_404(ManagerProfile, user=request.user)
+        all_employee = EmployeeProfile.objects.all()
+        employees = all_employee.filter(company=manager.company)
+        if request.method == 'POST':
+            manager_form = ManagerProfileForm(request.POST, instance=manager)
+            if manager_form.is_valid():
+                manager_form.save()
+    except Exception as e:
+            messages.error(request, "You have not got permission to access the manager page!")
+            return redirect('home')
+            
     
     template = 'manager.html'
     context = {
+        'manager': manager,
         'manager_form': manager_form,
         'employees': employees,
     }

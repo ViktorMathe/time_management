@@ -14,7 +14,7 @@ class Business(models.Model):
 class ManagerProfile(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     phone_number = models.IntegerField(blank=True, null=True)
-    company = models.ForeignKey(Business, on_delete=models.CASCADE)
+    company = models.ForeignKey(Business, on_delete=models.CASCADE, editable=False)
 
     def __str__(self):
         return self.user.first_name + " " + self.user.last_name

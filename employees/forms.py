@@ -29,6 +29,6 @@ class EmployeeSignupForm(SignupForm):
 class EmployeeProfileForm(forms.ModelForm):
     class Meta:
         model = EmployeeProfile
-        fields = ('user', 'phone_number', 'birth_date', 'gender', 'line_manager', 'company', 'start_date', )
-        exclude = ('approved', )
+        fields = ('phone_number', 'birth_date', 'gender', )
+        exclude = ('user','line_manager','company','start_date','approved', )
 

@@ -16,6 +16,11 @@
             <form class="mt-3 profile-update-form text" action="{% url 'manager' %}" method="POST"
                 id="profile-update-form">
                 {% csrf_token %}
+                <p>Username: {{ manager.user }}</p>
+                <p>E-mail: {{ manager.user.email }}</p>
+                <p>Company: {{ manager.company }}</p>
+                <p>First Name: {{ manager.user.first_name}}</p>
+                <p>Last Name: {{ manager.user.last_name}}</p>
                 {{ manager_form.as_p }}
                 <button class="btn rounded-2 text float-right border mt-2">Update Information</button>
             </form>
