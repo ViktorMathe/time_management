@@ -6,6 +6,7 @@ django-dotenv==1.4.2
 django-filter==23.2
 django-restframework==0.0.1
 djangorestframework==3.14.0
+gunicorn==21.2.0
 Markdown==3.4.3
 oauthlib==3.2.2
 PyJWT==2.7.0
