@@ -40,6 +40,11 @@ def view_timesheets(request):
     context = {'timesheets': timesheets, 'grouped_timesheets': grouped_timesheets}
     return render(request, template, context)
 
+@login_required
+def holidays(request):
+    template = 'holidays.html'
+    return render(request, template)
+
 
 def holiday_request(request, user):
     """ Takes the date and time that the employee requested from / to """ 

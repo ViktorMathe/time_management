@@ -34,8 +34,6 @@ SITE_ID = 1
 
 CSRF_TRUSTED_ORIGINS = ['https://*.gitpod.io']
 
-DISABLE_COLLECTSTATIC=1
-
 
 # Application definition
 

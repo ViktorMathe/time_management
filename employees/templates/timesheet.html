@@ -8,7 +8,7 @@
 <table class="table collapse" id="{{ month|slugify }}">
   <thead>
     <tr>
-      <th scope="col">#</th>
+      <th scope="col">Date</th>
       <th scope="col">Name</th>
       <th scope="col">Clocking Time</th>
       <th scope="col">In / Out</th>
@@ -22,9 +22,9 @@
   {% for timesheet in timesheets reversed %}
   <tbody class="{% cycle 'gray' 'white' %}">
     <tr>
-      <th scope="row">{{ forloop.revcounter }}</th>
+      <th scope="row">{{ timesheet.clocking_time|date:'d/M' }}</th>
       <td>{{ timesheet.get_employee_name }}</td>
-      <td>{{ timesheet.clocking_time }}</td>
+      <td>{{ timesheet.clocking_time|date:'h:i' }}</td>
       <td>{{ timesheet.logging }}</td>
       <td>{{ timesheet.get_worked_hours }}</td>
       <td>{{ timesheet.get_weekly_hours }}</td>
