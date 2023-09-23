@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="remove-bg"></div>
+<h2 class="text p-2"> Messages from the Contact Us</h2>
+{% for message in contact_messages reversed%}
+<div class="card  m-4">
+  <div class="card-body silver-bg">
+    <h5 class="card-title">From: {{ message.email }}</h5>
+    {% if message.phone_number %}
+    <h6 class="card-subtitle mb-2 text-muted">Phone number: {{ message.phone_number }}</h6>
+    {% endif %}
+    <h6 class="card-subtitle">Subject: {{ message.subject }}</h6>
+    <p class="card-text">Message: {{ message.message }}</p>
+  <div>
+    <a href="{% url 'reply' message.id %}" class="card-link btn blue-text box border border-black rounded-2">Reply</a>
+    {% if message.answered == True %}
+    <p class="small text p-1 box rounded-2 mt-1">Answered! <i class="fa-solid fa-check"></i></p>
+    {% endif %}
+  </div>
+  </div>
+</div>
+{% endfor %}
+
+{% endblock %}

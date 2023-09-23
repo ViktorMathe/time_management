@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="remove-bg"></div>
+<div class="container">
+<h2 class="text p-2"> Reply to {{ user.email }}</h2>
+
+<form class="text p-2" method="POST">
+    {% csrf_token %}
+    {{ reply_form.email | as_crispy_field }}
+    {{ reply_form.subject | as_crispy_field }}
+    {{ reply_form.message | as_crispy_field }}
+    <input class="btn btn-lg border text mt-2 rounded-2" type="submit" value="Reply">
+</form>
+</div>
+{% endblock %}

@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="remove-bg"></div>
+<h2 class="text p-2"> Replies for Contact Us Messages</h2>
+{% for message in reply_messages reversed %}
+<div class="card m-4">
+  <div class="card-body">
+    <h5 class="card-title text-black">From: {{ message.email }}</h5>
+    {% if message.phone_number %}
+    <h6 class="card-subtitle mb-2 text-black text-muted">Phone number: {{ message.phone_number }}</h6>
+    {% endif %}
+    <h6 class="card-subtitle text-black">Subject: {{ message.subject }}</h6>
+    <p class="card-text text-black">Message: {{ message.message }}</p>
+  </div>
+</div>
+{% endfor %}
+
+{% endblock %}

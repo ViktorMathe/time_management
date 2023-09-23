@@ -23,7 +23,7 @@
                 id="profile-update-form">
                 {% csrf_token %}
                 <p>Username: {{employee.user}}</p>
-                <p>Manager: {{employee.line_manager}} <a href="#"><i class="text fa-solid fa-envelope"></i></a></p>
+                <p>Manager: {{employee.line_manager}} <a href="{% url 'contact' %}"><i class="text fa-solid fa-envelope"></i></a></p>
                 <p>Company: {{employee.company}}</p>
                 <p>Start Date: {{employee.start_date}}</p>
                 {{ form.as_p }}
