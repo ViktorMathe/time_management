@@ -8,11 +8,13 @@ from clocking.models import Timesheet
 from datetime import datetime, date
 from itertools import groupby
 from operator import attrgetter
+from manager.models import ManagerProfile
 
 
 @login_required
 def employee_profile(request):
     employee = get_object_or_404(EmployeeProfile, user=request.user)
+    available_managers = ManagerProfile.objects.filter(company=employee.company)
     if request.method == 'POST':
         form = EmployeeProfileForm(request.POST, instance=employee)
         if form.is_valid():
@@ -21,11 +23,11 @@ def employee_profile(request):
                 request, 'Your profile information has been updated!')
     else:
         form = EmployeeProfileForm(instance=employee)
-
     template = 'profile.html'
     context= {
         'form': form,
         'employee': employee,
+        'available_managers': available_managers
     }
     return render(request, template, context)
 

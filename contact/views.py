@@ -1,23 +1,54 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import User
 from django.core.mail import send_mail
 from django.contrib import messages
 from django.conf import settings
 
 from .forms import Contact_Form, ReplyForm
 from .models import Contact, Reply
+from employees.models import EmployeeProfile
+from manager.models import ManagerProfile
 
 
+@login_required
 def contact(request):
+    recipient_id = request.GET.get('recipient_id')
+
     if request.method == 'POST':
         form = Contact_Form(request.POST)
         if form.is_valid():
-            form.save()
-            messages.success(request, 'Your contact form has been submitted!\
-                You will get a reply in 48 hours. Thank you!')
-            return redirect('contact_us')
+            sender = EmployeeProfile.objects.get(user=request.user)
+            subject = form.cleaned_data['subject']
+            message_text = form.cleaned_data['message']
+            
+            # Check if recipient_id is None or empty before proceeding
+            if recipient_id:
+                try:
+                    recipient = ManagerProfile.objects.get(pk=recipient_id)
+                except ManagerProfile.DoesNotExist:
+                    # Handle the case where the recipient does not exist
+                    recipient = None
+
+                # Create a new message with the sender and recipient if recipient is not None
+                if recipient:
+                    message = Contact.objects.create(
+                        sender=sender,
+                        recipient=recipient,
+                        subject=subject,
+                        message=message_text,
+                    )
+                    print('success')
+                    return redirect('profile')  # Redirect to the message listing page
+            else:
+                # Handle the case where recipient_id is None (e.g., invalid or not selected)
+                # You can add error handling or redirect as needed
+                pass
     else:
-        form = Contact_Form()
+        # Use recipient_id obtained from the query parameter as initial data
+        form = Contact_Form(initial={'recipient': recipient_id})
+
+    # Pass the available managers to the template context
     context = {'form': form}
     return render(request, 'contact.html', context)
 

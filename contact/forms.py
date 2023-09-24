@@ -1,25 +1,17 @@
 from django.forms import ModelForm
 from .models import Contact, Reply
-
+from manager.models import ManagerProfile  # Import your ManagerProfile model
 
 class Contact_Form(ModelForm):
     class Meta:
         model = Contact
-        fields = 'phone_number', 'email', 'subject', 'message'
+        fields = ['recipient', 'subject', 'message']
 
     def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        placeholders = {
-            'phone_number': 'Phone Number (Optional)',
-            'email': 'Email Address*',
-            'subject': 'Subject*',
-            'message': 'Message*'
-        }
+        super(Contact_Form, self).__init__(*args, **kwargs)
 
-        for field in self.fields:
-            placeholder = placeholders[field]
-            self.fields[field].widget.attrs['placeholder'] = placeholder
-            self.fields[field].label = False
+        self.fields['recipient'].widget.attrs['readonly'] = True
+
 
 
 class ReplyForm(ModelForm):
@@ -30,7 +22,6 @@ class ReplyForm(ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         placeholders = {
-            'email': 'Email Address*',
             'subject': 'Subject*',
             'message': 'Message*'
         }

@@ -12,6 +12,7 @@ let toastList = toastElList.map(function (toastEl) {
 $(function () {
   $("#tabs").tabs();
 });
+
 $('#date_to').datepicker({ "dateFormat": "yy-mm-dd" });
 $('#date_from').datepicker({ "dateFormat": "yy-mm-dd" });
 $('#time_to').timepicker({ 'timeFormat': 'H:i' });
