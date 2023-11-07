@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+
+<ul>
+    <h3>Accepted emails</h3>
+    {% for email in accepted_emails %}
+    <li>{{ email }}</li>
+    {% endfor %}
+</ul>
+
+<ul>
+    <h3>Pending emails</h3>
+    {% for email in pending_emails %}
+    <li>
+        {{ email }}
+    </li>
+    {% endfor %}
+</ul>
+
+{% endblock %}

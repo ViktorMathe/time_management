@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'allauth',
     'allauth.account',
     'allauth.socialaccount',
+    'invitations',
     'rest_framework',
     'employees',
     'contact',
@@ -156,6 +157,7 @@ else:
     EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASS')
     DEFAULT_FROM_EMAIL = os.environ.get('EMAIL_HOST_USER')
 
+ACCOUNT_ADAPTER = 'invitations.models.InvitationsAdapter'
 ACCOUNT_AUTHENTICATION_METHOD = 'username_email'
 ACCOUNT_EMAIL_REQUIRED = True
 ACCOUNT_EMAIL_VERIFICATION = 'mandatory'
@@ -164,6 +166,10 @@ ACCOUNT_USERNAME_MIN_LENGTH = 4
 LOGIN_URL = '/accounts/login/'
 LOGIN_REDIRECT_URL = '/'
 
+ACCEPT_INVITE_AFTER_SIGNUP = True
+INVITATIONS_INVITE_ONLY = True
+INVITATIONS_INVITE_EXPIRE = 7
+INVITATIONS_SIGNUP_REDIRECT = 'custom_accept_invite'
 
 # Internationalization
 # https://docs.djangoproject.com/en/4.2/topics/i18n/

@@ -86,8 +86,11 @@
                                     <a class="dropdown-item" href="#">
                                         <i class="text fa-solid fa-plus"></i> Add/Edit Employee</a>
 
-                                    <a class="dropdown-item" href="#">
+                                    <a class="dropdown-item" href="{% url 'send_manager_invitation' %}">
                                         <i class="text fa-solid fa-plus"></i> Add Manager</a>
+
+                                    <a class="dropdown-item" href="{% url 'invitations' %}">
+                                        <i class="text fa-solid fa-plus"></i> Invitations</a>
 
                                     <a class="dropdown-item" href="#">
                                         <i class="text fa-solid fa-inbox"></i> Messages</a>

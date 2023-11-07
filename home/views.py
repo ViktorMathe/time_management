@@ -23,5 +23,5 @@ def index(request):
                 return redirect('home')  # Redirect to the homepage or any other desired page
         else:
             messages.error(request, "Incorrect Username/Password.")
-
+   
     return render(request, "index.html")

@@ -19,6 +19,7 @@ from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 from allauth.account.views import LoginView
+from manager import views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -27,4 +28,5 @@ urlpatterns = [
     path('', include('home.urls')),
     path('', include('contact.urls')),
     path('accounts/', include('allauth.urls')),
+    path('invitations/', include('invitations.urls', namespace='invitations')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
