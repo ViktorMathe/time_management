@@ -9,10 +9,6 @@ let toastList = toastElList.map(function (toastEl) {
   bsToast.show();
 });
 
-$(function () {
-  $("#tabs").tabs();
-});
-
 $('#date_to').datepicker({ "dateFormat": "yy-mm-dd" });
 $('#date_from').datepicker({ "dateFormat": "yy-mm-dd" });
 $('#time_to').timepicker({ 'timeFormat': 'H:i' });
@@ -20,12 +16,11 @@ $('#time_from').timepicker({ 'timeFormat': 'H:i' });
 
 document.addEventListener('DOMContentLoaded', function () {
   var company_id = getQueryParameterByName('company_id');
-  // Rest of your JavaScript code
 
   if (company_id) {
     // Send the 'company_id' to your server using AJAX
     // Example using fetch:
-    fetch('/manager-registration/' + company_id + '/', {  // Adjust the endpoint
+    fetch('/manager-registration/' + company_id + '/', { 
       method: 'POST',
       body: JSON.stringify({ company_id }),
       headers: {

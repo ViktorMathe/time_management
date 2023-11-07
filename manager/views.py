@@ -4,7 +4,7 @@ from django.views.generic.edit import FormView
 from django.http import HttpResponseRedirect, JsonResponse
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
-from .forms import RegisterBusinessForm, ManagerProfileForm, EmployeeApprovalForm, ManagerRegistrationForm, ManagerInvitationForm
+from .forms import RegisterBusinessForm, ManagerProfileForm, EmployeeApprovalForm, ManagerRegistrationForm, ManagerInvitationForm, EmployeeInvitationForm, EmployeeRegistrationForm
 from django.core.mail import send_mail
 from django.conf import settings
 from invitations.models import Invitation
@@ -16,12 +16,8 @@ from django.contrib.auth.decorators import login_required
 from django.urls import reverse, reverse_lazy
 from django.utils import timezone
 from datetime import datetime
-import logging
-from django.core.exceptions import ObjectDoesNotExist
 
-logger = logging.getLogger(__name__)
 
-# Create your views here.
 def business_register(request):
     business_form = RegisterBusinessForm()
     if request.method == "POST":
@@ -35,6 +31,142 @@ def business_register(request):
 
     context = {'business_form':business_form}
     return render(request, "reg_business.html", context)
+
+
+@login_required
+def send_manager_invitation(request):
+    if request.method == "POST":
+        invitation_form = ManagerInvitationForm(request.POST)
+        if invitation_form.is_valid():
+            email = invitation_form.cleaned_data['email']
+
+            # Retrieve the user's manager profile and company
+            user = request.user
+            manager_profile = ManagerProfile.objects.get(user=user)
+            company = manager_profile.company
+            company_id = company.id
+
+            # Create an invitation using django-invitations
+            invitation = Invitation.create(email)
+            invitation.sent = timezone.now()  # Set the sent time
+            invitation.save()  # Save the invitation to get its key
+
+            # Construct the invitation URL
+            invitation_key = invitation.key
+            invitation_link = request.build_absolute_uri(reverse('invitations:accept-invite', kwargs={'key': invitation_key}))
+            invitation_link += f'?company_id={company_id}&type=manager'
+
+            email_subject = "Invitation to Join as Manager"
+
+            email_message = f"You have been invited to join as a Manager at our company. Please click the following link to register:\n<a href='{invitation_link}'>Accept Invitation</a>"
+
+            send_mail(
+                email_subject,
+                email_message,
+                request.user.email,  # Sender's email
+                [email],  # Invited user's email
+                fail_silently=False,
+            )
+            print(0)
+            messages.success(request, f"Invitation sent successfully to {email}")
+            return redirect('send_manager_invitation')
+
+    else:
+        invitation_form = ManagerInvitationForm()
+
+    context = {'invitation_form': invitation_form}
+    return render(request, "send_manager_invite.html", context)
+
+
+class AcceptInviteView(AcceptInvite):
+    def post(self, *args, **kwargs):
+        invitation = self.get_object()
+
+        if not invitation:
+            # Newer behavior: show an error message and redirect.
+            messages.error(self.request, 'Invalid invitation. Please try again.')
+            return redirect('some_error_view')  # Update this to your error view.
+
+        if invitation.accepted:
+            messages.error(self.request, 'Invitation has already been accepted.')
+            return redirect('some_error_view')  # Update this to your error view.
+
+        if invitation.key_expired():
+            messages.error(self.request, 'Invitation has expired.')
+            return redirect('some_error_view')  # Update this to your error view.
+
+        # If everything is fine, you can add your custom logic here.
+        # For example, you can store the company_id in the session and redirect to your registration page.
+        company_id = self.request.GET.get('company_id')
+        registration_type = self.request.GET.get('type')
+        self.request.session['company_id'] = company_id
+        if registration_type == 'manager':
+            # Redirect to manager registration view
+            return redirect(reverse('manager_registration', args=[company_id]))
+        elif registration_type == 'employee':
+            # Redirect to employee registration view
+            return redirect(reverse('employee_registration', args=[company_id]))
+        else:
+            return redirect('home')
+
+
+def manager_registration(request, company_id):
+    if request.method == "POST":
+        try:
+            business = Business.objects.get(pk=company_id)  # Fetch the Business instance
+
+            form = ManagerRegistrationForm(request.POST)
+            if form.is_valid():
+                user = form.save()
+                manager_profile = ManagerProfile.objects.create(user=user, company=business)
+
+                # Redirect to the manager's dashboard page
+                return redirect('account_login')
+            else:
+                # Get detailed form error messages
+                form_errors = form.errors.as_data()
+                for field_name, field_errors in form_errors.items():
+                    for error in field_errors:
+                        messages.error(request, f"Error in field '{field_name}': {error}")
+        except Business.DoesNotExist:
+            messages.error(request, "Company not found.")
+        except Exception as e:
+            messages.error(request, f"An error occurred: {str(e)}")
+    else:
+        form = ManagerRegistrationForm()
+
+    context = {'form': form}
+    return render(request, 'manager_register.html', context)
+
+
+@login_required
+def invitations(request):
+    accepted_invitations = Invitation.objects.filter(accepted=True)
+    accepted_emails = [invitation.email for invitation in accepted_invitations]
+
+    pending_invitations = Invitation.objects.filter(accepted=False)
+    pending_emails = [invitation.email for invitation in pending_invitations]
+
+    context= {
+         'accepted_emails': accepted_emails,
+         'pending_emails': pending_emails,
+    }
+
+    return render(request, 'invitations.html', context)
+
+
+def delete_pending_invitation(request, invitation_id):
+    if request.method == 'POST':
+        invitation = get_object_or_404(Invitation, id=invitation_id)
+
+        # Check if the invitation is pending
+        if invitation.status == Invitation.STATUS_SENT:
+            invitation.delete()
+            return JsonResponse({'message': 'Invitation deleted successfully'})
+        else:
+            return JsonResponse({'error': 'Invitation is not pending'})
+
+    return JsonResponse({'error': 'Invalid request'})
 
 
 @login_required
@@ -61,6 +193,79 @@ def manager_site(request):
     return render(request, template, context)
 
 
+@login_required
+def send_employee_invitation(request):
+    if request.method == "POST":
+            employee_invitation_form = EmployeeInvitationForm(request.POST)
+            if employee_invitation_form.is_valid():
+                email = employee_invitation_form.cleaned_data['email']
+
+                # Retrieve the user's manager profile and company
+                user = request.user
+                manager_profile = ManagerProfile.objects.get(user=user)
+                company = manager_profile.company
+                company_id = company.id
+
+                # Create an invitation using django-invitations
+                invitation = Invitation.create(email)
+                invitation.sent = timezone.now()  # Set the sent time
+                invitation.save()  # Save the invitation to get its key
+
+                # Construct the invitation URL
+                invitation_key = invitation.key
+                invitation_link = request.build_absolute_uri(reverse('invitations:accept-invite', kwargs={'key': invitation_key}))
+                invitation_link += f'?company_id={company_id}&type=employee'
+
+                email_subject = "Invitation to Join as an Employee"
+
+                email_message = f"You have been invited to join as an Employee at our company. Please click the following link to register:\n<a href='{invitation_link}'>Accept Invitation</a>"
+
+                send_mail(
+                    email_subject,
+                    email_message,
+                    request.user.email,  # Sender's email
+                    [email],  # Invited user's email
+                    fail_silently=False,
+                )
+                messages.success(request, f"Invitation sent successfully to {email}")
+                return redirect('send_employee_invitation')
+    else:
+        employee_invitation_form = EmployeeInvitationForm()
+
+    context = {'employee_invitation_form': employee_invitation_form}
+    return render(request, "send_employee_invite.html", context)
+
+
+def employee_registration(request, company_id):
+    if request.method == "POST":
+        try:
+            business = Business.objects.get(pk=company_id)  # Fetch the Business instance
+
+            form = EmployeeRegistrationForm(request.POST)
+            if form.is_valid():
+                user = form.save()
+                employee_profile = EmployeeProfile.objects.create(user=user, company=business)
+
+                # Redirect to the manager's dashboard page
+                return redirect('account_login')
+            else:
+                # Get detailed form error messages
+                form_errors = form.errors.as_data()
+                for field_name, field_errors in form_errors.items():
+                    for error in field_errors:
+                        messages.error(request, f"Error in field '{field_name}': {error}")
+        except Business.DoesNotExist:
+            messages.error(request, "Company not found.")
+        except Exception as e:
+            messages.error(request, f"An error occurred: {str(e)}")
+    else:
+        form = EmployeeRegistrationForm()
+
+    context = {'form': form}
+    return render(request, 'employee_register.html', context)
+
+
+@login_required
 def approve_employee(request, employee_id):
     employee = get_object_or_404(EmployeeProfile, pk=employee_id)
     if request.method == 'POST':
@@ -133,131 +338,3 @@ def loggedin(request):  # Define function, accept a request
     
     # Responds with passing the object items (contains info from the DB) to the template loggedin.html 
     return render(request, 'loggedin.html', context)
-
-
-def send_manager_invitation(request):
-    if request.method == "POST":
-        invitation_form = ManagerInvitationForm(request.POST)
-        if invitation_form.is_valid():
-            email = invitation_form.cleaned_data['email']
-
-            # Retrieve the user's manager profile and company
-            user = request.user
-            manager_profile = ManagerProfile.objects.get(user=user)
-            company = manager_profile.company
-            company_id = company.id
-
-            # Create an invitation using django-invitations
-            invitation = Invitation.create(email)
-            invitation.sent = timezone.now()  # Set the sent time
-            invitation.save()  # Save the invitation to get its key
-
-            # Construct the invitation URL
-            invitation_key = invitation.key
-            invitation_link = request.build_absolute_uri(reverse('invitations:accept-invite', kwargs={'key': invitation_key}))
-            invitation_link += f'?company_id={company_id}'
-
-            email_subject = "Invitation to Join as Manager"
-
-            email_message = f"You have been invited to join as a Manager at our company. Please click the following link to register:\n<a href='{invitation_link}'>Accept Invitation</a>"
-
-            send_mail(
-                email_subject,
-                email_message,
-                request.user.email,  # Sender's email
-                [email],  # Invited user's email
-                fail_silently=False,
-            )
-            print(0)
-            messages.success(request, f"Invitation sent successfully to {email}")
-            return redirect('send_manager_invitation')
-
-    else:
-        invitation_form = ManagerInvitationForm()
-
-    context = {'invitation_form': invitation_form}
-    return render(request, "send_manager_invite.html", context)
-
-
-class AcceptInviteView(AcceptInvite):
-    def post(self, *args, **kwargs):
-        invitation = self.get_object()
-
-        if not invitation:
-            # Newer behavior: show an error message and redirect.
-            messages.error(self.request, 'Invalid invitation. Please try again.')
-            return redirect('some_error_view')  # Update this to your error view.
-
-        if invitation.accepted:
-            messages.error(self.request, 'Invitation has already been accepted.')
-            return redirect('some_error_view')  # Update this to your error view.
-
-        if invitation.key_expired():
-            messages.error(self.request, 'Invitation has expired.')
-            return redirect('some_error_view')  # Update this to your error view.
-
-        # If everything is fine, you can add your custom logic here.
-        # For example, you can store the company_id in the session and redirect to your registration page.
-        company_id = self.request.GET.get('company_id')
-        self.request.session['company_id'] = company_id
-        return redirect(reverse('manager_registration', args=[company_id]))
-
-
-def custom_manager_registration(request, company_id):
-    if request.method == "POST":
-        try:
-            print(company_id)
-            business = Business.objects.get(pk=company_id)  # Fetch the Business instance
-
-            form = ManagerRegistrationForm(request.POST)
-            if form.is_valid():
-                user = form.save()
-                manager_profile = ManagerProfile.objects.create(user=user, company=business)
-
-                # Redirect to the manager's dashboard page
-                return redirect('accounts/login')
-            else:
-                # Get detailed form error messages
-                form_errors = form.errors.as_data()
-                for field_name, field_errors in form_errors.items():
-                    for error in field_errors:
-                        messages.error(request, f"Error in field '{field_name}': {error}")
-        except Business.DoesNotExist:
-            messages.error(request, "Company not found.")
-        except Exception as e:
-            messages.error(request, f"An error occurred: {str(e)}")
-    else:
-        form = ManagerRegistrationForm()
-        print(company_id)
-
-    context = {'form': form}
-    return render(request, 'manager_register.html', context)
-
-
-def invitations(request):
-    accepted_invitations = Invitation.objects.filter(accepted=True)
-    accepted_emails = [invitation.email for invitation in accepted_invitations]
-
-    pending_invitations = Invitation.objects.filter(accepted=False)
-    pending_emails = [invitation.email for invitation in pending_invitations]
-
-    context= {
-         'accepted_emails': accepted_emails,
-         'pending_emails': pending_emails,
-    }
-
-    return render(request, 'invitations.html', context)
-
-
-def delete_pending_invitation(request, invitation_id):
-    if request.method == 'POST':
-        invitation = get_object_or_404(Invitation, id=invitation_id)
-
-        # Check if the invitation is pending
-        if invitation.status == Invitation.STATUS_SENT:
-            invitation.delete()
-            return JsonResponse({'message': 'Invitation deleted successfully'})
-        else:
-            return JsonResponse({'error': 'Invitation is not pending'})
-
-    return JsonResponse({'error': 'Invalid request'})

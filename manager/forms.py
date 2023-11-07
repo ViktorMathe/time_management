@@ -52,6 +52,10 @@ class RegisterBusinessForm(forms.ModelForm):
         return business
 
 
+class ManagerInvitationForm(forms.Form):
+    email = forms.EmailField(label='Email')
+
+
 class ManagerRegistrationForm(UserCreationForm):
     username = forms.CharField(max_length=30, label='Username')
     password1 = forms.CharField(widget=forms.PasswordInput, label='Password')
@@ -86,11 +90,32 @@ class ManagerProfileForm(forms.ModelForm):
         return obj.company
 
 
+class EmployeeInvitationForm(forms.Form):
+    email = forms.EmailField(label='Email')
+
+
+class EmployeeRegistrationForm(UserCreationForm):
+    username = forms.CharField(max_length=30, label='Username')
+    password1 = forms.CharField(widget=forms.PasswordInput, label='Password')
+    password2 = forms.CharField(widget=forms.PasswordInput, label='Password again')
+    first_name = forms.CharField(max_length=128, label='First Name')
+    last_name = forms.CharField(max_length=128, label='Last Name')
+
+    class Meta:
+        model = User
+        fields = ['username', 'password1', 'password2', 'first_name', 'last_name', 'email']
+
+    def save(self, commit=True):
+        user = super(EmployeeRegistrationForm, self).save(commit=False)
+
+        if commit:
+            user.save()
+
+        return user
+
+
 class EmployeeApprovalForm(forms.ModelForm):
     class Meta:
         model = EmployeeProfile
         fields = ('approved', )
 
-
-class ManagerInvitationForm(forms.Form):
-    email = forms.EmailField(label='Email')

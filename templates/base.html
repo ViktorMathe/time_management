@@ -83,8 +83,9 @@
                                 <div class="dropdown-menu" aria-labelledby="manager-menu">
                                     <a class="dropdown-item" href="{% url 'manager' %}">
                                         <i class="text fa-solid fa-house-user"></i> Manager Profile</a>
-                                    <a class="dropdown-item" href="#">
-                                        <i class="text fa-solid fa-plus"></i> Add/Edit Employee</a>
+
+                                    <a class="dropdown-item" href="{% url 'send_employee_invitation' %}">
+                                        <i class="text fa-solid fa-plus"></i> Add Employee</a>
 
                                     <a class="dropdown-item" href="{% url 'send_manager_invitation' %}">
                                         <i class="text fa-solid fa-plus"></i> Add Manager</a>
