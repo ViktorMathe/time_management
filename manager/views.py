@@ -13,22 +13,25 @@ from .models import ManagerProfile, Business
 from employees.models import EmployeeProfile, AnnualLeave
 from clocking.models import Timesheet
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import User
 from django.urls import reverse, reverse_lazy
 from django.utils import timezone
 from datetime import datetime
 
 
 def business_register(request):
-    business_form = RegisterBusinessForm()
-    if request.method == "POST":
-        business_form = RegisterBusinessForm(request.POST)
-        if business_form.is_valid():
-           business_form.save(request)
-           logout(request)
-           return redirect('home')
+    try:
+        if request.method == "POST":
+            business_form = RegisterBusinessForm(request.POST)
+            if business_form.is_valid():
+               business_form.save(request)
+               logout(request)
+               return redirect('home')
         else:
-           business_form = RegisterBusinessForm()
-
+             business_form = RegisterBusinessForm()
+    except AttributeError as e:
+        print("Exception in view function:", e)
+        raise
     context = {'business_form':business_form}
     return render(request, "reg_business.html", context)
 
@@ -67,7 +70,6 @@ def send_manager_invitation(request):
                 [email],  # Invited user's email
                 fail_silently=False,
             )
-            print(0)
             messages.success(request, f"Invitation sent successfully to {email}")
             return redirect('send_manager_invitation')
 
