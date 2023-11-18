@@ -6,6 +6,7 @@ from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from .forms import RegisterBusinessForm, ManagerProfileForm, EmployeeApprovalForm, ManagerRegistrationForm, ManagerInvitationForm, EmployeeInvitationForm, EmployeeRegistrationForm
 from django.core.mail import send_mail
+from django.core.exceptions import ValidationError
 from django.conf import settings
 from invitations.models import Invitation
 from invitations.views import AcceptInvite
@@ -17,21 +18,18 @@ from django.contrib.auth.models import User
 from django.urls import reverse, reverse_lazy
 from django.utils import timezone
 from datetime import datetime
+from django import forms
 
 
 def business_register(request):
-    try:
-        if request.method == "POST":
-            business_form = RegisterBusinessForm(request.POST)
-            if business_form.is_valid():
-               business_form.save(request)
-               logout(request)
-               return redirect('home')
-        else:
-             business_form = RegisterBusinessForm()
-    except AttributeError as e:
-        print("Exception in view function:", e)
-        raise
+    if request.method == "POST":
+        business_form = RegisterBusinessForm(request.POST)
+        if business_form.is_valid():
+           business_form.save(request)
+           logout(request)
+           return redirect('home')
+    else:
+         business_form = RegisterBusinessForm()
     context = {'business_form':business_form}
     return render(request, "reg_business.html", context)
 
@@ -42,6 +40,13 @@ def send_manager_invitation(request):
         invitation_form = ManagerInvitationForm(request.POST)
         if invitation_form.is_valid():
             email = invitation_form.cleaned_data['email']
+            try:
+                double_invitation = Invitation.objects.filter(email=email)
+                if double_invitation.exists():
+                    messages.error(request, f'Following email address already been invited: {email}')
+                    return redirect('send_manager_invitation')
+            except Invitation.DoesNotExist:
+                return email
 
             # Retrieve the user's manager profile and company
             user = request.user
@@ -87,18 +92,17 @@ class AcceptInviteView(AcceptInvite):
         if not invitation:
             # Newer behavior: show an error message and redirect.
             messages.error(self.request, 'Invalid invitation. Please try again.')
-            return redirect('some_error_view')  # Update this to your error view.
+            return redirect('home')
 
         if invitation.accepted:
             messages.error(self.request, 'Invitation has already been accepted.')
-            return redirect('some_error_view')  # Update this to your error view.
+            return redirect('home')
 
         if invitation.key_expired():
             messages.error(self.request, 'Invitation has expired.')
-            return redirect('some_error_view')  # Update this to your error view.
+            return redirect('home')
 
-        # If everything is fine, you can add your custom logic here.
-        # For example, you can store the company_id in the session and redirect to your registration page.
+        # Store the company_id in the session and redirect to your registration page.
         company_id = self.request.GET.get('company_id')
         registration_type = self.request.GET.get('type')
         self.request.session['company_id'] = company_id
@@ -116,11 +120,18 @@ def manager_registration(request, company_id):
     if request.method == "POST":
         try:
             business = Business.objects.get(pk=company_id)  # Fetch the Business instance
-
             form = ManagerRegistrationForm(request.POST)
             if form.is_valid():
                 user = form.save()
                 manager_profile = ManagerProfile.objects.create(user=user, company=business)
+                invitation = get_object_or_404(Invitation, email=manager_profile.user.email)
+                try:
+                    if not invitation.accepted:
+                        # Mark the invitation as accepted
+                        invitation.accepted = True
+                        invitation.save()
+                except Exception as e:
+                    message.error(request, f"Error accepting invitation: {e}")
 
                 # Redirect to the manager's dashboard page
                 return redirect('account_login')
@@ -129,7 +140,7 @@ def manager_registration(request, company_id):
                 form_errors = form.errors.as_data()
                 for field_name, field_errors in form_errors.items():
                     for error in field_errors:
-                        messages.error(request, f"Error in field '{field_name}': {error}")
+                        messages.error(request, f"{error}")
         except Business.DoesNotExist:
             messages.error(request, "Company not found.")
         except Exception as e:
@@ -201,6 +212,13 @@ def send_employee_invitation(request):
             employee_invitation_form = EmployeeInvitationForm(request.POST)
             if employee_invitation_form.is_valid():
                 email = employee_invitation_form.cleaned_data['email']
+                try:
+                    double_invitation = Invitation.objects.filter(email=email)
+                    if double_invitation.exists():
+                        messages.error(request, f'Following email address already been invited: {email}')
+                        return redirect('send_employee_invitation')
+                except Invitation.DoesNotExist:
+                    return email
 
                 # Retrieve the user's manager profile and company
                 user = request.user
@@ -247,6 +265,14 @@ def employee_registration(request, company_id):
             if form.is_valid():
                 user = form.save()
                 employee_profile = EmployeeProfile.objects.create(user=user, company=business)
+                invitation = get_object_or_404(Invitation, email=employee_profile.user.email)
+                try:
+                    if not invitation.accepted:
+                        # Mark the invitation as accepted
+                        invitation.accepted = True
+                        invitation.save()
+                except Exception as e:
+                    message.error(request, f"Error accepting invitation: {e}")
 
                 # Redirect to the manager's dashboard page
                 return redirect('account_login')

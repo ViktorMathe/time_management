@@ -13,6 +13,7 @@ class Business(models.Model):
 
 class ManagerProfile(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
+    email = models.EmailField(unique=True, blank=True, null=True)
     phone_number = models.IntegerField(blank=True, null=True)
     company = models.ForeignKey(Business, on_delete=models.CASCADE, editable=False)
 
