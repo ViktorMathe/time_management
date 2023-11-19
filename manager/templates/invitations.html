@@ -11,9 +11,11 @@
 
 <ul>
     <h3>Pending emails</h3>
-    {% for email in pending_emails %}
+    {% for invitation in pending_invitations %}
     <li>
-        {{ email }}
+        {{ invitation.email }}
+        {{ invitation.id }}
+        <a href="{% url 'delete_pending_invitation' invitation.id %}">Delete pending invitation</a>
     </li>
     {% endfor %}
 </ul>

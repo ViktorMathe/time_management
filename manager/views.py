@@ -158,28 +158,20 @@ def invitations(request):
     accepted_emails = [invitation.email for invitation in accepted_invitations]
 
     pending_invitations = Invitation.objects.filter(accepted=False)
-    pending_emails = [invitation.email for invitation in pending_invitations]
 
     context= {
          'accepted_emails': accepted_emails,
-         'pending_emails': pending_emails,
+         'pending_invitations': pending_invitations,
     }
 
     return render(request, 'invitations.html', context)
 
 
 def delete_pending_invitation(request, invitation_id):
-    if request.method == 'POST':
-        invitation = get_object_or_404(Invitation, id=invitation_id)
-
-        # Check if the invitation is pending
-        if invitation.status == Invitation.STATUS_SENT:
-            invitation.delete()
-            return JsonResponse({'message': 'Invitation deleted successfully'})
-        else:
-            return JsonResponse({'error': 'Invitation is not pending'})
-
-    return JsonResponse({'error': 'Invalid request'})
+    invitation = get_object_or_404(Invitation, id=invitation_id)
+    invitation.delete()
+    messages.warning(request, f'Invitation for {invitation.email} has been deleted!')
+    return redirect(reverse('invitations'))
 
 
 @login_required
