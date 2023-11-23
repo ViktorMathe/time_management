@@ -1,6 +1,6 @@
 from django import forms
 from django.contrib.auth import login
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Group
 from django.contrib.auth.forms import UserCreationForm
 from .models import Business, ManagerProfile
 from employees.models import EmployeeProfile
@@ -23,7 +23,6 @@ class RegisterBusinessForm(forms.ModelForm):
             cleaned_data = super().clean()
             manager_username = cleaned_data.get('manager_username')
             try:
-                print('try')
                 user_with_same_name = User.objects.exclude(pk=self.instance.pk).filter(username=manager_username)
                 if user_with_same_name.exists():
                     raise forms.ValidationError(f'Username "{manager_username}" is already in use.')
@@ -62,6 +61,8 @@ class RegisterBusinessForm(forms.ModelForm):
         user.last_name = manager_last_name
         user.is_superuser = True  # Make the manager a superuser
         user.is_staff = False  # Disallow the manager from accessing the admin interface
+        group = Group.objects.get(name="managers_admin")
+        group.user_set.add(user)
         user.save()
 
         # Associate the manager's user account with the business
