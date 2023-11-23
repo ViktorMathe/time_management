@@ -13,5 +13,5 @@ urlpatterns = [
     path('send-employee-invitation/', views.send_employee_invitation, name='send_employee_invitation'),
     path('employee-registration/<int:company_id>', views.employee_registration, name='employee_registration'),
     path('invitations/accept-invite/<str:key>', views.AcceptInviteView.as_view(), name='custom_accept_invite'),
-    path('delete-pending-invitation/<int:invitation_id>/', views.delete_pending_invitation, name='delete_pending_invitation'),
+    path('delete-invitation/<int:invitation_id>/', views.delete_invitation, name='delete_invitation'),
 ]

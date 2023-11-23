@@ -155,19 +155,18 @@ def manager_registration(request, company_id):
 @login_required
 def invitations(request):
     accepted_invitations = Invitation.objects.filter(accepted=True)
-    accepted_emails = [invitation.email for invitation in accepted_invitations]
 
     pending_invitations = Invitation.objects.filter(accepted=False)
 
     context= {
-         'accepted_emails': accepted_emails,
+         'accepted_invitations': accepted_invitations,
          'pending_invitations': pending_invitations,
     }
 
     return render(request, 'invitations.html', context)
 
 
-def delete_pending_invitation(request, invitation_id):
+def delete_invitation(request, invitation_id):
     invitation = get_object_or_404(Invitation, id=invitation_id)
     invitation.delete()
     messages.warning(request, f'Invitation for {invitation.email} has been deleted!')

@@ -3,19 +3,23 @@
 {% block content %}
 
 <ul>
-    <h3>Accepted emails</h3>
-    {% for email in accepted_emails %}
-    <li>{{ email }}</li>
+    <h3>Accepted Invitations</h3>
+    {% for invitation in accepted_invitations %}
+    <li>{{ invitation.email }}</li>
+    {% if request.user.is_superuser %}
+        <a href="{% url 'delete_invitation' invitation.id %}">Delete accepted invitation</a>
+        {% endif %}
     {% endfor %}
 </ul>
 
 <ul>
-    <h3>Pending emails</h3>
+    <h3>Pending Invitations</h3>
     {% for invitation in pending_invitations %}
     <li>
         {{ invitation.email }}
-        {{ invitation.id }}
-        <a href="{% url 'delete_pending_invitation' invitation.id %}">Delete pending invitation</a>
+        {% if request.user.is_superuser %}
+        <a href="{% url 'delete_invitation' invitation.id %}">Delete pending invitation</a>
+        {% endif %}
     </li>
     {% endfor %}
 </ul>
