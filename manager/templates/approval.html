@@ -5,7 +5,7 @@
     <form action="{% url 'approve' employee.id %}" method="POST">
         {% csrf_token %}
         {{ approval_form.as_p}}
-        <button class="btn rounded-2 text float-right border mt-2">Approve</button>
+        <button class="btn rounded-2 text float-right border mt-2">Submit</button>
     </form>
 
 {% endblock %}

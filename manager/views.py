@@ -4,6 +4,7 @@ from django.views.generic.edit import FormView
 from django.http import HttpResponseRedirect, JsonResponse
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.models import User
 from .forms import RegisterBusinessForm, ManagerProfileForm, EmployeeApprovalForm, ManagerRegistrationForm, ManagerInvitationForm, EmployeeInvitationForm, EmployeeRegistrationForm
 from django.core.mail import send_mail
 from django.core.exceptions import ValidationError
@@ -166,6 +167,7 @@ def invitations(request):
     return render(request, 'invitations.html', context)
 
 
+@login_required
 def delete_invitation(request, invitation_id):
     invitation = get_object_or_404(Invitation, id=invitation_id)
     invitation.delete()
@@ -178,6 +180,8 @@ def manager_site(request):
     try:
         manager = get_object_or_404(ManagerProfile, user=request.user)
         all_employee = EmployeeProfile.objects.all()
+        all_managers = ManagerProfile.objects.all()
+        managers = all_managers.filter(company=manager.company)
         employees = all_employee.filter(company=manager.company)
         manager_form = ManagerProfileForm(instance=manager)
         if request.method == 'POST':
@@ -193,8 +197,21 @@ def manager_site(request):
         'manager': manager,
         'manager_form': manager_form,
         'employees': employees,
+        'managers': managers,
     }
     return render(request, template, context)
+
+
+@login_required
+def delete_manager(request, id):
+    try:
+        manager = get_object_or_404(ManagerProfile, id=id)
+        user = User.objects.get(username=manager.user)
+        user.delete()
+        messages.warning(request, f'Manager user: {manager.user.first_name} {manager.user.last_name} has been deleted!')
+    except:
+        messages.error(request, "User not found!")
+    return redirect(reverse('manager'))
 
 
 @login_required
@@ -292,6 +309,7 @@ def approve_employee(request, employee_id):
         if approval_form.is_valid():
             EmployeeProfile.objects.filter(pk=employee_id).update(approved=1)
             approval_form.save()
+            return redirect('manager')
     else:
         approval_form = EmployeeApprovalForm(instance=employee)
 
@@ -302,6 +320,19 @@ def approve_employee(request, employee_id):
         'approval_form': approval_form
     }
     return render(request, template, context)
+
+
+@login_required
+def delete_employee(request, id):
+    try:
+        employee = get_object_or_404(EmployeeProfile, id=id)
+        user = User.objects.get(username=employee.user)
+        user.delete()
+        messages.warning(request, f'Employee user: {employee.user.first_name} {employee.user.last_name} has been deleted!')
+    except:
+        messages.error(request, "User not found!")
+    return redirect(reverse('manager'))
+
 
 @login_required
 def mgnt_clocking(request): #Define function, accept a request 

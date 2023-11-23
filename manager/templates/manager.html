@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% load static %}
+{% load custom_filter %}
 
 {% block content %}
 
@@ -21,15 +22,35 @@
                 <p>Company: {{ manager.company }}</p>
                 <p>First Name: {{ manager.user.first_name}}</p>
                 <p>Last Name: {{ manager.user.last_name}}</p>
+                <p>Phone Number: {{ manager.phone_number }}</p>
                 {{ manager_form.as_p }}
                 <button class="btn rounded-2 text float-right border mt-2">Update Information</button>
             </form>
+            <a href="{% url 'delete_manager' manager.id %}">Delete profile</a>
         </div>
-    {% for employee in employees %}
-        <a href="{% url 'approve' employee.id %}">{{ employee.user.first_name}} {{ employee.user.last_name }}</a>
-        <p>{{ employee.get_approved_display }}</p>
-        <p>{{employee.start_date}}</p>
+        <h3>Managers</h3>
+        {% for manager in managers %}
+        {% if request.user|has_group:"managers_admin" %}
+            {% if request.user == manager.user %}
+            <p>{{ manager.user.first_name }} {{ manager.user.last_name }} (Admin) </p>
+            {% else %}
+            <p>{{ manager.user.first_name }} {{ manager.user.last_name }} <a
+                    href="{% url 'delete_manager' manager.id %}">Delete</a></p>
+            {% endif %}
+        {% else %}
+        <p>{{ manager.user.first_name }} {{ manager.user.last_name }}</p>
+        {% endif %}
+        {% endfor %}
 
-    {% endfor %}
+        <h3>Employees</h3>
+        {% for employee in employees %}
+        <p>Name: {{ employee.user.first_name}} {{ employee.user.last_name }}
+            <a href="{% url 'approve' employee.id %}">Approval</a>
+            <a href="{% url 'delete_employee' employee.id %}">Delete</a>
+        </p>
+        <p>Approval: {{ employee.get_approved_display }}</p>
+        <p>Start date: {{employee.start_date}}</p>
 
-{% endblock %}
+        {% endfor %}
+
+        {% endblock %}
