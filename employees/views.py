@@ -13,16 +13,19 @@ from manager.models import ManagerProfile
 
 @login_required
 def employee_profile(request):
-    employee = get_object_or_404(EmployeeProfile, user=request.user)
-    available_managers = ManagerProfile.objects.filter(company=employee.company)
-    if request.method == 'POST':
-        form = EmployeeProfileForm(request.POST, instance=employee)
-        if form.is_valid():
-            form.save()
-            messages.success(
-                request, 'Your profile information has been updated!')
-    else:
-        form = EmployeeProfileForm(instance=employee)
+    try:
+        employee = get_object_or_404(EmployeeProfile, user=request.user)
+        available_managers = ManagerProfile.objects.filter(company=employee.company)
+        if request.method == 'POST':
+            form = EmployeeProfileForm(request.POST, instance=employee)
+            if form.is_valid():
+                form.save()
+                messages.success(
+                    request, 'Your profile information has been updated!')
+    except Exception as e:
+            messages.error(request, "Looks like your company has been deleted! Try to contact with your manager.")
+            return redirect('home')
+        
     template = 'profile.html'
     context= {
         'form': form,

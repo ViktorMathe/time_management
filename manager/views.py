@@ -188,6 +188,8 @@ def manager_site(request):
             manager_form = ManagerProfileForm(request.POST, instance=manager)
             if manager_form.is_valid():
                 manager_form.save()
+                messages.success(
+                    request, 'Your profile information has been updated!')
     except Exception as e:
             messages.error(request, "You have not got permission to access the manager page!")
             return redirect('home')
