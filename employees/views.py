@@ -9,10 +9,12 @@ from datetime import datetime, date
 from itertools import groupby
 from operator import attrgetter
 from manager.models import ManagerProfile
+from manager.views import delete_employee
 
 
 @login_required
 def employee_profile(request):
+    form = None
     try:
         employee = get_object_or_404(EmployeeProfile, user=request.user)
         available_managers = ManagerProfile.objects.filter(company=employee.company)
@@ -22,9 +24,10 @@ def employee_profile(request):
                 form.save()
                 messages.success(
                     request, 'Your profile information has been updated!')
+        else:
+            form = EmployeeProfileForm(instance=employee)
     except Exception as e:
-            messages.error(request, "Looks like your company has been deleted! Try to contact with your manager.")
-            return redirect('home')
+            return render(request, 'profile.html')
         
     template = 'profile.html'
     context= {
@@ -33,6 +36,17 @@ def employee_profile(request):
         'available_managers': available_managers
     }
     return render(request, template, context)
+
+@login_required
+def delete_profile(request, id):
+    try:
+        employee = get_object_or_404(EmployeeProfile, id=id)
+        user = User.objects.get(username=employee.user)
+        user.delete()
+        messages.warning(request, f'Employee user: {employee.user.first_name} {employee.user.last_name} has been deleted!')
+    except:
+        messages.error(request, "User not found!")
+    return redirect(reverse('home'))
 
 @login_required
 def view_timesheets(request):

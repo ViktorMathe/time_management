@@ -48,7 +48,7 @@
             <a href="{% url 'approve' employee.id %}">Approval</a>
             <a href="{% url 'delete_employee' employee.id %}">Delete</a>
         </p>
-        <p>Approval: {{ employee.get_approved_display }}</p>
+        <p>Status: {{ employee.get_approved_display }}</p>
         <p>Start date: {{employee.start_date}}</p>
 
         {% endfor %}

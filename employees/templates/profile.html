@@ -5,6 +5,28 @@
 <div class="remove-bg"></div>
 <div class="container">
     <div class="row">
+        {% if employee.company == None %}
+        <div class="col">
+            The company you have been registered with has been deleted. Please try to contact with your manager some alternative way. You can delete your profile if you <a href="" data-bs-toggle="modal" data-bs-target="#myModal">click here.</a>
+        </div>
+        <div class="modal" id="myModal" tabindex="-1">
+            <div class="modal-dialog">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h5 class="modal-title">Delete Profile</h5>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                  <p>Click on DELETE to confirm your profile {{employee.user.first_name}}.</p>
+                </div>
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                  <button type="button" class="btn btn-danger">Delete</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        {% else %}
         <div class="col">
             <hr>
             <h2 class="text p-2 mb-4">My Profile</h2>
@@ -38,6 +60,7 @@
         </div>
         {% endif %}
     </div>
+    {% endif %}
 </div>
 
 <script>
@@ -58,5 +81,12 @@
             });
         });
     });
+
+    const myModal = document.getElementById('myModal')
+    const myInput = document.getElementById('myInput')
+
+    myModal.addEventListener('shown.bs.modal', () => {
+    myInput.focus()
+    })
 </script>
 {% endblock %}
