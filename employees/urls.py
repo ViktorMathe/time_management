@@ -6,6 +6,7 @@ urlpatterns = [
 	path('holiday_request/', views.holiday_request_action),
 	path('profile/', views.employee_profile, name='profile'),
 	path('timesheet/', views.view_timesheets, name='timesheets'),
+	path('download-timesheets/', views.download_timesheet_data, name='download_timesheets'),
 	path('holidays/', views.holidays, name='holidays'),
 	path('delete_profile/<id>', views.delete_profile, name='delete_profile')
 ]

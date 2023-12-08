@@ -3,6 +3,7 @@
 
 
 {% block content %}
+<p>Download all your timesheets here: <a href="{% url 'download_timesheets' %}">Download Timesheets</a></p>
 {% for month, timesheets in grouped_timesheets.items reversed %}
   <h2 class="btn btn-primary" data-bs-toggle="collapse" href="#{{ month|slugify }}" role="button" aria-expanded="false" aria-controls="c{{ month|slugify }}">{{ month }}</h2>
 <table class="table collapse" id="{{ month|slugify }}">

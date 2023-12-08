@@ -19,7 +19,7 @@ class Timesheet(models.Model):
     logging = models.CharField(max_length=3, choices=LOGGING_CHOICES)
     ip_address = models.GenericIPAddressField(null=True)
     comments = models.TextField(blank=True, null=True)
-    worked_hours = models.CharField(max_length=54, null=True)
+    total_worked_hours = models.CharField(max_length=54, null=True)
 
     class Meta:
         get_latest_by = 'clocking_time'

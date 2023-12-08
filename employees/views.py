@@ -10,6 +10,9 @@ from itertools import groupby
 from operator import attrgetter
 from manager.models import ManagerProfile
 from manager.views import delete_employee
+import csv
+from io import StringIO, BytesIO
+import zipfile
 
 
 @login_required
@@ -58,6 +61,49 @@ def view_timesheets(request):
     template = 'timesheet.html'
     context = {'timesheets': timesheets, 'grouped_timesheets': grouped_timesheets}
     return render(request, template, context)
+
+
+@login_required
+def download_timesheet_data(request):
+    # Retrieve timesheet data for the requested user
+    timesheets = Timesheet.objects.filter(employee=request.user)
+
+    # Create a response with appropriate headers
+    response = HttpResponse(content_type='application/zip')
+    response['Content-Disposition'] = f'attachment; filename="{request.user.first_name}_{request.user.last_name}_timesheets.zip"'
+
+    # Create a Zip file
+    with zipfile.ZipFile(response, 'w') as zip_file:
+        # Group timesheets by month
+        timesheets_by_month = {}
+        for timesheet in timesheets:
+            month_key = timesheet.clocking_time.strftime('%Y-%m')  # Use YYYY-MM as the key
+            if month_key not in timesheets_by_month:
+                timesheets_by_month[month_key] = []
+            timesheets_by_month[month_key].append(timesheet)
+
+        # Create a separate CSV file for each month
+        for month_key, timesheets_month in timesheets_by_month.items():
+            csv_buffer = StringIO()
+            csv_writer = csv.writer(csv_buffer)
+            csv_writer.writerow(['Date', 'Clock In', 'Clock Out', 'Total Hours'])  # Add appropriate column headers
+
+            for timesheet in timesheets_month:
+                clock_in_time = timesheet.get_clocking_time_in()
+                clock_out_time = timesheet.clocking_time.strftime('%H:%M:%S') if timesheet.clocking_time else ''
+                total_hours = timesheet.get_monthly_hours()  # Use the method to get monthly hours
+
+                csv_writer.writerow([
+                    timesheet.clocking_time.strftime('%Y-%m-%d'),  # Assuming 'clocking_time' is a DateTimeField
+                    clock_in_time.strftime('%H:%M:%S') if clock_in_time else '',  # Adjust the time format as needed
+                    clock_out_time,
+                    total_hours
+                ])
+
+            # Add the CSV file to the Zip file
+            zip_file.writestr(f"{month_key}_{request.user.first_name}_{request.user.last_name}_timesheet.csv", csv_buffer.getvalue())
+
+    return response
 
 @login_required
 def holidays(request):
